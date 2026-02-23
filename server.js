@@ -7,27 +7,34 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Server-side signup endpoint that uses the Supabase service_role key
-app.post('/api/signup', async (req, res) => {
-    // Use explicit throws so the centralized error handler can provide details.
-    class HttpError extends Error {
-        constructor(status, message, details) {
-            super(message);
-            this.status = status;
-            this.details = details;
-        }
-    }
+// --- Helper: sign in via Supabase GoTrue (returns session) ---
+async function supabaseSignIn(email, password) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const resp = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            apikey: serviceKey,
+        },
+        body: JSON.stringify({ email, password }),
+    });
+    const data = await resp.json();
+    return { ok: resp.ok, status: resp.status, data };
+}
 
+// --- POST /api/signup ---
+app.post('/api/signup', async (req, res) => {
     try {
         const { email, password, fullName, role } = req.body || {};
-        if (!email || !password) throw new HttpError(400, 'Missing required fields', { required: ['email','password'] });
+        if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
 
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        const supabaseUrl = process.env.SUPABASE_URL || 'https://rjrbzwqrpczmzhkfvyoy.supabase.co';
+        const supabaseUrl = process.env.SUPABASE_URL;
+        if (!serviceKey || !supabaseUrl) return res.status(500).json({ error: 'Server auth not configured.' });
 
-        if (!serviceKey) throw new HttpError(500, 'Service role key not configured on server. Set SUPABASE_SERVICE_ROLE_KEY in .env');
-
-        const resp = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+        // 1. Try to create the user (admin API, auto-confirms email)
+        const createResp = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -38,41 +45,67 @@ app.post('/api/signup', async (req, res) => {
                 email,
                 password,
                 email_confirm: true,
-                user_metadata: { full_name: fullName, role }
+                user_metadata: { full_name: fullName, role },
             }),
         });
+        const createData = await createResp.json();
 
-        let data;
-        try {
-            data = await resp.json();
-        } catch (parseErr) {
-            throw new HttpError(502, 'Invalid JSON from Supabase admin API', { originalError: parseErr.message });
+        if (!createResp.ok) {
+            const code = createData.error_code || createData.code;
+
+            // 2. If email already exists, try signing in with provided password
+            if (code === 'email_exists') {
+                const login = await supabaseSignIn(email, password);
+                if (login.ok) {
+                    return res.json({ user: login.data.user, session: login.data });
+                }
+                // Wrong password — don't reveal that the account exists with different creds
+                return res.status(409).json({ error: 'An account with this email already exists.' });
+            }
+
+            const msg = createData.msg || createData.message || 'Signup failed';
+            return res.status(createResp.status).json({ error: msg });
         }
 
-        if (!resp.ok) {
-            // Include Supabase returned body for debugging
-            throw new HttpError(resp.status, 'Supabase admin API error', { supabase: data });
+        // 3. User created — now sign them in to get a session
+        const login = await supabaseSignIn(email, password);
+        if (!login.ok) {
+            // User was created but sign-in failed (shouldn't happen)
+            return res.status(500).json({ error: 'Account created but auto-login failed. Please log in manually.' });
         }
 
-        // Best-effort: insert profile row, but don't fail signup if this fails
-        if (data && data.id) {
+        // 4. Best-effort: insert profile row into users table
+        if (createData.id) {
             try {
-                await db`INSERT INTO users (id, email, full_name, role) VALUES (${data.id}, ${email}, ${fullName}, ${role})`;
+                await db`INSERT INTO users (id, email, full_name, role) VALUES (${createData.id}, ${email}, ${fullName || ''}, ${role || 'volunteer'})`;
             } catch (dbErr) {
-                console.error('Profile insert failed:', dbErr);
-                // Attach non-fatal DB error details to response
-                data._profileInsertError = dbErr.message || String(dbErr);
+                console.error('Profile insert failed (non-fatal):', dbErr.message);
             }
         }
 
-        return res.json(data);
+        return res.json({ user: login.data.user, session: login.data });
     } catch (err) {
-        // If it's an HttpError, use its status, otherwise 500
         console.error('Signup error:', err);
-        const status = err.status || 500;
-        const payload = { error: err.message };
-        if (err.details) payload.details = err.details;
-        return res.status(status).json(payload);
+        return res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+// --- POST /api/login ---
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body || {};
+        if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
+
+        const login = await supabaseSignIn(email, password);
+        if (!login.ok) {
+            const msg = login.data.error_description || login.data.msg || 'Invalid email or password.';
+            return res.status(login.status).json({ error: msg });
+        }
+
+        return res.json({ user: login.data.user, session: login.data });
+    } catch (err) {
+        console.error('Login error:', err);
+        return res.status(500).json({ error: 'Internal server error.' });
     }
 });
 

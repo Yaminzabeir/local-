@@ -7,39 +7,75 @@ const client = supabase.createClient(supabaseUrl, supabaseKey)
 export { client as supabase };
 
 export const signUp = async (email, password, fullName, role) => {
-    // Use server-side signup to avoid sending verification emails from client.
     try {
         const res = await fetch('/api/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password, fullName, role }),
         });
-        let data;
-        try {
-            data = await res.json();
-        } catch (e) {
-            throw new Error('Invalid JSON response from server');
-        }
+        const data = await res.json();
         if (!res.ok) {
-            const message = data && data.error ? data.error : 'Signup failed';
-            const details = data && data.details ? data.details : null;
-            const err = new Error(message);
-            err.details = details;
-            throw err;
+            return { data: null, error: { message: data.error || 'Signup failed' } };
+        }
+        // Set the Supabase client session so dashboard queries work
+        if (data.session && data.session.access_token && data.session.refresh_token) {
+            await client.auth.setSession({
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token,
+            });
+        }
+        // Save user profile to localStorage for dashboard
+        const user = data.user || data.session?.user;
+        if (user) {
+            const profile = {
+                id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || fullName || '',
+                role: user.user_metadata?.role || role || 'volunteer',
+            };
+            localStorage.setItem('user_profile', JSON.stringify(profile));
         }
         return { data, error: null };
     } catch (err) {
         console.error('signUp error:', err);
-        return { data: null, error: { message: err.message, details: err.details || null } };
+        return { data: null, error: { message: err.message } };
     }
 };
 
 export const signIn = async (email, password) => {
-    const { data, error } = await client.auth.signInWithPassword({
-        email,
-        password,
-    });
-    return { data, error };
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            return { data: null, error: { message: data.error || 'Login failed' } };
+        }
+        // Set the Supabase client session so dashboard queries work
+        if (data.session && data.session.access_token && data.session.refresh_token) {
+            await client.auth.setSession({
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token,
+            });
+        }
+        // Save user profile to localStorage for dashboard
+        const user = data.user || data.session?.user;
+        if (user) {
+            const profile = {
+                id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || '',
+                role: user.user_metadata?.role || 'volunteer',
+            };
+            localStorage.setItem('user_profile', JSON.stringify(profile));
+        }
+        return { data, error: null };
+    } catch (err) {
+        console.error('signIn error:', err);
+        return { data: null, error: { message: err.message } };
+    }
 };
 
 export const signOut = async () => {

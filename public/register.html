@@ -108,8 +108,9 @@
                 msg.textContent = `Error: ${error.message}`;
                 msg.style.color = 'var(--red)';
             } else {
-                msg.textContent = '🎉 Account created! Please check your email to confirm.';
+                msg.textContent = '🎉 Success! Redirecting to dashboard...';
                 msg.style.color = 'var(--green)';
+                setTimeout(() => window.location.href = 'dashboard.html', 800);
             }
         });
     </script>

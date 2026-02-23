@@ -1,27 +1,33 @@
-import { supabase, signOut, getUserProfile } from './supabase-client.js';
+import { supabase, signOut } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Check Auth
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    // 1. Check Auth — read profile from localStorage (saved on signup/login)
+    const stored = localStorage.getItem('user_profile');
+    if (!stored) {
         window.location.href = 'login.html';
         return;
     }
 
-    // 2. Fetch User Profile (Role)
-    const { data: profile, error } = await getUserProfile(user.id);
-
-    if (error || !profile) {
-        console.error('Profile fetch error', error);
-        alert('Error loading profile. Please contact support.');
+    let profile;
+    try {
+        profile = JSON.parse(stored);
+    } catch (e) {
+        window.location.href = 'login.html';
         return;
     }
 
+    if (!profile || !profile.id) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Use a mock user object with the id for Supabase queries
+    const user = { id: profile.id, email: profile.email };
+
     // 3. Update Sidebar
-    document.getElementById('user-name').textContent = profile.full_name;
-    document.getElementById('sidebar-avatar').textContent = profile.full_name.charAt(0);
-    document.getElementById('user-role').textContent = profile.role.toUpperCase();
+    document.getElementById('user-name').textContent = profile.full_name || 'User';
+    document.getElementById('sidebar-avatar').textContent = (profile.full_name || 'U').charAt(0);
+    document.getElementById('user-role').textContent = (profile.role || 'volunteer').toUpperCase();
 
     // 4. Show Relevant Dashboard
     if (profile.role === 'volunteer') {
@@ -34,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Logout Handler
     document.getElementById('logout-btn').addEventListener('click', async () => {
+        localStorage.removeItem('user_profile');
         await signOut();
         window.location.href = 'index.html';
     });
