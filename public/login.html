@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In - Local Volunteer Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="auth-container">
+        <!-- Left Panel -->
+        <div class="auth-left">
+            <a href="/"
+                style="color:var(--orange); font-size:1.4rem; font-weight:800; margin-bottom:3rem; display:block;">Local
+                Volunteer <span style="color:var(--yellow);">Hub</span></a>
+            <h1>Welcome back,<br>volunteer! 👋</h1>
+            <p style="margin-top:1rem;">Log in to your account to browse opportunities, track your hours, and connect
+                with organizations making a difference.</p>
+            <div style="margin-top:3rem; display:flex; flex-direction:column; gap:1rem; position:relative; z-index:1;">
+                <div
+                    style="background:rgba(255,255,255,0.1); border-radius:12px; padding:1rem 1.25rem; display:flex; gap:0.75rem; align-items:center;">
+                    <span style="font-size:1.5rem;">🔍</span>
+                    <div>
+                        <div style="font-weight:700; font-size:0.9rem;">Find Opportunities</div>
+                        <div style="font-size:0.8rem; opacity:0.75;">Filter by location, date & cause</div>
+                    </div>
+                </div>
+                <div
+                    style="background:rgba(255,255,255,0.1); border-radius:12px; padding:1rem 1.25rem; display:flex; gap:0.75rem; align-items:center;">
+                    <span style="font-size:1.5rem;">📊</span>
+                    <div>
+                        <div style="font-weight:700; font-size:0.9rem;">Track Your Impact</div>
+                        <div style="font-size:0.8rem; opacity:0.75;">Log hours & see your difference</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="auth-right">
+            <div class="auth-box">
+                <a href="/"
+                    style="color:var(--text-muted); font-size:0.85rem; display:flex; align-items:center; gap:0.4rem; margin-bottom:2rem;">←
+                    Back to home</a>
+                <h2 class="auth-box-title">Sign in to your account</h2>
+                <p class="auth-box-sub">Don't have an account? <a href="register.html"
+                        style="color:var(--primary); font-weight:600;">Sign up free →</a></p>
+
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" required placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">Log In
+                        →</button>
+                </form>
+
+                <div id="message" style="text-align:center; margin-top:1rem; font-size:0.9rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { signIn } from './js/supabase-client.js';
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('message');
+            msg.textContent = 'Signing in...';
+            msg.style.color = 'var(--text-muted)';
+            const { data, error } = await signIn(email, password);
+            if (error) {
+                msg.textContent = `Error: ${error.message}`;
+                msg.style.color = 'var(--red)';
+            } else {
+                msg.textContent = 'Success! Redirecting...';
+                msg.style.color = 'var(--green)';
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+            }
+        });
+    </script>
+    <script src="js/chatbot.js"></script>
+</body>
+
+</html>

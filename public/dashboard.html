@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Local Volunteer Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Section Visibility */
+        .dashboard-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .data-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: var(--bg-soft);
+        }
+
+        .data-table tr:hover td {
+            background: var(--bg-soft);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .status-active,
+        .status-approved {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-pending {
+            background: #fffbeb;
+            color: #b45309;
+        }
+
+        .status-rejected,
+        .status-closed {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        /* Form overrides for modal */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius-md);
+            font-family: var(--font);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 71, 255, 0.1);
+        }
+
+        /* Dashboard cards */
+        .glass-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-xs);
+            margin-bottom: 1.5rem;
+        }
+
+        .glass-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-profile">
+                <div class="avatar" id="sidebar-avatar">U</div>
+                <div>
+                    <div style="font-weight: 600;" id="user-name">Loading...</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);" id="user-role">...</div>
+                </div>
+            </div>
+
+            <nav id="sidebar-nav">
+                <!-- Injected via JS based on role -->
+            </nav>
+
+            <div class="nav-item nav-item-logout" id="logout-btn">
+                <span>🚪</span> Sign Out
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Volunteer Dashboard -->
+            <div id="volunteer-dashboard" class="dashboard-section">
+                <header
+                    style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Welcome back, <span class="highlight" id="vol-name">User</span>!</h2>
+                    <a href="opportunities.html" class="btn btn-primary">Browse Opportunities</a>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-card">
+                        <span class="stat-value" id="vol-hours">0</span>
+                        <span class="stat-label">Hours Contributed</span>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <span class="stat-value" id="vol-applications">0</span>
+                        <span class="stat-label">Active Applications</span>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3>My Applications</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Opportunity</th>
+                                <th>Organization</th>
+                                <th>Date Applied</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applications-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Organization Dashboard -->
+            <div id="org-dashboard" class="dashboard-section">
+                <header
+                    style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Organization Dashboard</h2>
+                    <button class="btn btn-primary" id="create-post-btn">+ Post Opportunity</button>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-card">
+                        <span class="stat-value" id="org-active-posts">0</span>
+                        <span class="stat-label">Active Listings</span>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <span class="stat-value" id="org-pending-apps">0</span>
+                        <span class="stat-label">Pending Applications</span>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="margin-bottom: 2rem;">
+                    <h3>Manage Opportunities</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="org-posts-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="glass-card">
+                    <h3>Incoming Applications</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Opportunity</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="org-applications-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div id="admin-dashboard" class="dashboard-section">
+                <header style="margin-bottom: 2rem;">
+                    <h2>Admin Dashboard</h2>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-card">
+                        <span class="stat-value" id="admin-total-users">0</span>
+                        <span class="stat-label">Total Users</span>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <span class="stat-value" id="admin-total-orgs">0</span>
+                        <span class="stat-label">Organizations</span>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <span class="stat-value" id="admin-active-opps">0</span>
+                        <span class="stat-label">Active Opportunities</span>
+                    </div>
+                </div>
+
+                <!-- Pending Organizations -->
+                <div class="glass-card" style="margin-bottom: 2rem;">
+                    <h3>Pending Organization Approvals</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <thead>
+                                    <tr>
+                                        <th>Organization Name</th>
+                                        <th>Contact</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                        <tbody id="admin-pending-orgs-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- All Organizations -->
+                <div class="glass-card" style="margin-bottom: 2rem;">
+                    <h3>All Organizations</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-all-orgs-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Recent Users -->
+                <div class="glass-card" style="margin-bottom: 2rem;">
+                    <h3>Manage Users</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Email</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Manage Opportunities -->
+                <div class="glass-card">
+                    <h3>Manage Opportunities</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Organization</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-opps-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Notifications Dashboard -->
+            <div id="notifications-dashboard" class="dashboard-section">
+                <header style="margin-bottom: 2rem;">
+                    <h2>Notifications</h2>
+                </header>
+                <div class="glass-card">
+                    <div id="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Populated via JS -->
+                        <div class="text-center" style="color: var(--text-muted); padding: 2rem;">Loading
+                            notifications...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Opportunity Modal -->
+    <div class="modal" id="post-modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;" id="modal-title">Post New Opportunity</h2>
+            <form id="post-form">
+                <input type="hidden" id="post-id">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="post-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="post-desc" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="post-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="post-location" required>
+                </div>
+                <!-- Slots -->
+                <div class="form-group">
+                    <label>Slots Available</label>
+                    <input type="number" id="post-slots" value="5" required>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-post-btn">Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Org Profile Completion Modal -->
+    <div class="modal" id="org-profile-modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">Complete Organization Profile</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Please provide details about your organization to
+                start posting opportunities.</p>
+            <form id="org-profile-form">
+                <div class="form-group">
+                    <label>Organization Name</label>
+                    <input type="text" id="org-name-init" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email</label>
+                    <input type="email" id="org-email-init" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Save & Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/dashboard.js"></script>
+    <script src="js/chatbot.js"></script>
+</body>
+
+</html>

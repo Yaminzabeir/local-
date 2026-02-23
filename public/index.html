@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Volunteer Hub | A Simple, Effective Platform to Manage Volunteers</title>
+    <meta name="description"
+        content="Connect volunteers with organizations. Find meaningful opportunities, track your impact, and make a difference in your local community.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* Index-specific overrides */
+        .opportunities-preview {
+            background: var(--bg-soft);
+        }
+
+        .opportunity-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-xs);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .opportunity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--orange));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+
+        .opportunity-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .opportunity-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .opportunity-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .opportunity-card .org-name {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+        }
+
+        .opportunity-card .desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+
+        .opportunity-card .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .opportunity-card .meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: var(--bg-soft);
+            padding: 0.25rem 0.6rem;
+            border-radius: 99px;
+        }
+
+        .opportunities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+        }
+
+        .view-all-link {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .view-all-link:hover {
+            color: var(--primary-dark);
+        }
+
+        .features {
+            background: white;
+        }
+
+        /* Org trust logos */
+        .trust-section {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .trust-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .trust-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .trust-logo {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--text-light);
+            opacity: 0.6;
+            letter-spacing: -0.02em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">Local Volunteer <span class="highlight">Hub</span></a>
+            <div class="nav-links">
+                <a href="opportunities.html" class="nav-link">Opportunities</a>
+                <a href="organizations.html" class="nav-link">Organizations</a>
+                <a href="login.html" class="btn btn-outline btn-sm">Log In</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container hero-inner">
+            <!-- Left: Copy -->
+            <div class="hero-copy">
+                <div class="hero-tag">🌱 100% Free to Join</div>
+                <h1 class="hero-title">
+                    A simple platform to<br>
+                    <span class="accent">manage volunteers.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Connect with non-profits, discover meaningful opportunities, and
+                    track your volunteer journey — all in one beautifully simple place.
+                </p>
+                <div class="hero-actions">
+                    <a href="register.html" class="btn btn-primary btn-lg">Start Volunteering →</a>
+                    <a href="opportunities.html" class="btn btn-outline btn-lg">Browse Opportunities</a>
+                </div>
+                <div class="hero-social-proof">
+                    <div class="avatar-stack">
+                        <div class="avatar-placeholder">A</div>
+                        <div class="avatar-placeholder">B</div>
+                        <div class="avatar-placeholder">C</div>
+                        <div class="avatar-placeholder">+</div>
+                    </div>
+                    <div class="social-proof-text">
+                        <strong>500+ volunteers</strong>
+                        already making a difference
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Visual Card -->
+            <div class="hero-visual">
+                <div class="hero-card-main">
+                    <div
+                        style="font-weight: 700; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span
+                            style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;"></span>
+                        Live Opportunities
+                    </div>
+                    <div class="opp-preview-item">
+                        <div class="opp-preview-icon" style="background:#ede9ff;">🌿</div>
+                        <div>
+                            <div class="opp-preview-title">Park Cleanup Drive</div>
+                            <div class="opp-preview-meta">📍 Dhaka · 8 slots left</div>
+                        </div>
+                    </div>
+                    <div class="opp-preview-item">
+                        <div class="opp-preview-icon" style="background:#fff1ec;">📚</div>
+                        <div>
+                            <div class="opp-preview-title">Literacy Program Tutor</div>
+                            <div class="opp-preview-meta">📍 Remote · 12 slots left</div>
+                        </div>
+                    </div>
+                    <div class="opp-preview-item">
+                        <div class="opp-preview-icon" style="background:#dcfce7;">🏥</div>
+                        <div>
+                            <div class="opp-preview-title">Community Health Fair</div>
+                            <div class="opp-preview-meta">📍 Chittagong · 4 slots left</div>
+                        </div>
+                    </div>
+                    <a href="opportunities.html" class="btn btn-primary w-100" style="margin-top: 1.25rem;">View all
+                        opportunities →</a>
+                </div>
+
+                <div class="hero-card-stat stat-1">
+                    <div class="stat-card-value">120+</div>
+                    <div class="stat-card-label">Organizations</div>
+                </div>
+                <div class="hero-card-stat stat-2">
+                    <div class="stat-card-value">15k+</div>
+                    <div class="stat-card-label">Hours Served</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="container">
+            <div class="stats-grid">
+                <div>
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Active Volunteers</div>
+                </div>
+                <div>
+                    <div class="stat-number">120+</div>
+                    <div class="stat-label">Partner Organizations</div>
+                </div>
+                <div>
+                    <div class="stat-number">15,000+</div>
+                    <div class="stat-label">Hours Contributed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trust logos -->
+    <div class="trust-section">
+        <div class="container">
+            <div class="trust-label">Proud to work with amazing organizations</div>
+            <div class="trust-logos">
+                <div class="trust-logo">GreenEarth NGO</div>
+                <div class="trust-logo">HopeBridge</div>
+                <div class="trust-logo">CareCommunity</div>
+                <div class="trust-logo">LiteracyFirst</div>
+                <div class="trust-logo">HealthConnect</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Local Volunteer Hub -->
+    <section class="section features">
+        <div class="container">
+            <div class="section-header centered">
+                <div class="section-tag">Why Us</div>
+                <h2 class="section-title">Everything you need to<br>manage volunteering</h2>
+                <p class="section-subtitle">We put the joy into volunteer management — for organizations and volunteers
+                    alike.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon fi-purple">🔍</div>
+                    <h3>Smart Opportunity Discovery</h3>
+                    <p>Filter by cause, location, date, and available slots to find the perfect volunteer fit for your
+                        skills and schedule.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon fi-orange">📊</div>
+                    <h3>Track Your Impact</h3>
+                    <p>Log volunteer hours automatically and see how many hours you've contributed to your community
+                        over time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon fi-green">🤝</div>
+                    <h3>Direct Messaging</h3>
+                    <p>Connect directly with organizations, ask questions, and build lasting relationships with your
+                        community partners.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon fi-blue">📅</div>
+                    <h3>Shift Scheduling</h3>
+                    <p>See exact start and end times for every opportunity. Know exactly what time commitment you're
+                        making before signing up.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon fi-pink">🏢</div>
+                    <h3>Organization Dashboard</h3>
+                    <p>Organizations get powerful tools to post opportunities, manage applications, and track volunteer
+                        activity in real time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon fi-yellow">🤖</div>
+                    <h3>AI Assistant</h3>
+                    <p>Our built-in VolunteerBot answers all your questions about opportunities, slots, applications,
+                        and how the platform works.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section how-it-works">
+        <div class="container">
+            <div class="section-header centered">
+                <div class="section-tag purple">How It Works</div>
+                <h2 class="section-title">Get started in 3 easy steps</h2>
+                <p class="section-subtitle">It's quick, free, and joins you with a community of people making a real
+                    difference.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <h3>Create Your Account</h3>
+                    <p>Sign up as a volunteer or an organization in under 60 seconds. No credit card, no hidden fees —
+                        ever.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <h3>Browse & Apply</h3>
+                    <p>Search active opportunities by location, date, and cause. Apply with a single click and wait for
+                        confirmation.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <h3>Show Up & Make Impact</h3>
+                    <p>Get notified when your application is approved. Volunteer, track your hours, and build your
+                        impact story.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Opportunities -->
+    <section class="section opportunities-preview">
+        <div class="container">
+            <div class="section-header-row">
+                <div>
+                    <div class="section-tag purple">Live Now</div>
+                    <h2 class="section-title" style="margin-bottom:0;">Featured Opportunities</h2>
+                </div>
+                <a href="opportunities.html" class="view-all-link">View all →</a>
+            </div>
+            <div class="opportunities-grid" id="featured-opportunities">
+                <div class="loading-state" style="grid-column:1/-1;">Loading opportunities...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="section">
+        <div class="container">
+            <div class="cta-banner">
+                <h2>Ready to make a difference?</h2>
+                <p>Join hundreds of volunteers already creating change in their communities.</p>
+                <div class="btn-group">
+                    <a href="register.html" class="btn btn-white btn-lg">Get Started Free →</a>
+                    <a href="opportunities.html" class="btn btn-lg"
+                        style="background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.4);">Browse
+                        Opportunities</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-logo">Local Volunteer <span class="highlight">Hub</span></div>
+                    <p class="footer-desc">Connecting passionate volunteers with organizations that are making a real
+                        impact in local communities.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <a href="opportunities.html">Opportunities</a>
+                    <a href="organizations.html">Organizations</a>
+                    <a href="dashboard.html">Dashboard</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Account</h4>
+                    <a href="register.html">Sign Up</a>
+                    <a href="login.html">Log In</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <a href="#">About Us</a>
+                    <a href="#">How It Works</a>
+                    <a href="#">Help Center</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 Local Volunteer Hub. All rights reserved.</span>
+                <span>Made with ❤️ for communities</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/supabase-client.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script src="js/chatbot.js"></script>
+</body>
+
+</html>

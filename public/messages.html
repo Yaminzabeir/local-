@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Local Volunteer Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Move Chatbot to left for this page only */
+        .chatbot-container {
+            right: auto !important;
+            left: 2rem !important;
+        }
+
+        .chatbot-window {
+            right: auto !important;
+            left: 0 !important;
+            transform-origin: bottom left !important;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Local Volunteer <span class="highlight">Hub</span></a>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="organizations.html" class="nav-link">Organizations</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="msg-container">
+        <!-- Sidebar: Conversation List -->
+        <aside class="sidebar" id="conversations-list" style="overflow-y:auto;">
+            <div style="padding:1.25rem 1rem; border-bottom:1px solid var(--border-light);">
+                <div class="sidebar-logo" style="font-size:1rem;">Messages</div>
+            </div>
+            <div style="padding:1rem; color:var(--text-muted); font-size:0.9rem;">Loading conversations...</div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <header
+                style="padding:1rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1rem; background:white; flex-shrink:0;">
+                <div class="user-avatar" id="chat-header-avatar"
+                    style="width:36px;height:36px;font-size:0.9rem;display:none;">U</div>
+                <div style="font-weight:600; color:var(--text);" id="chat-header-name">Select a conversation</div>
+            </header>
+
+            <div class="messages-list" id="messages-list">
+                <div class="empty-chat">
+                    <div style="font-size:3rem; margin-bottom:1rem;">💬</div>
+                    <h3 style="font-size:1.1rem; margin-bottom:0.4rem;">Your Messages</h3>
+                    <p style="font-size:0.85rem;">Select a contact to start chatting</p>
+                </div>
+            </div>
+
+            <form class="input-area" id="message-form">
+                <input type="text" id="message-input" placeholder="Type a message..." disabled autocomplete="off">
+                <button type="submit" class="btn btn-primary" id="send-btn" disabled>Send →</button>
+            </form>
+        </main>
+    </div>
+
+    <!-- Script -->
+    <script type="module" src="js/messages.js"></script>
+    <script src="js/chatbot.js"></script>
+</body>
+
+</html>

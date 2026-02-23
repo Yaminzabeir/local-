@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizations - Local Volunteer Hub</title>
+    <meta name="description"
+        content="Browse non-profit organizations on Local Volunteer Hub looking for passionate volunteers.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Local Volunteer <span class="highlight">Hub</span></a>
+            <div class="nav-links">
+                <a href="opportunities.html" class="nav-link">Opportunities</a>
+                <a href="organizations.html" class="nav-link" style="color:var(--primary);">Organizations</a>
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="login.html" class="btn btn-outline btn-sm">Log In</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header" style="padding-top: calc(var(--nav-height) + 2rem);">
+        <div class="container">
+            <div class="section-tag" style="display:inline-flex; margin-bottom:1rem;">🏢 Community Partners</div>
+            <h1 class="section-title" style="font-size:2.5rem; margin-bottom:0.75rem;">Partner Organizations</h1>
+            <p style="color:var(--text-muted); max-width:560px; margin:0 auto;">Connect with the non-profit
+                organizations making a real difference in your community.</p>
+        </div>
+    </div>
+
+    <!-- Organizations Grid -->
+    <div class="container" style="padding-top:2.5rem;">
+        <div class="org-grid" id="org-grid">
+            <div class="loading-state" style="grid-column:1/-1;">Loading organizations...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabase-client.js';
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { window.location.href = 'login.html'; return; }
+            const grid = document.getElementById('org-grid');
+            const { data: orgs, error } = await supabase
+                .from('organizations').select('*').eq('status', 'approved').order('organization_name');
+            if (error) { grid.innerHTML = `<div class="loading-state" style="color:var(--red);">Error loading organizations.</div>`; return; }
+            if (!orgs || orgs.length === 0) { grid.innerHTML = `<div class="loading-state">No active organizations found yet.</div>`; return; }
+            grid.innerHTML = orgs.map(org => `
+      <div class="org-card">
+        <h3 class="org-name">${org.organization_name}</h3>
+        <p class="org-desc">${org.description || 'This organization hasn\'t added a description yet.'}</p>
+        <div class="org-meta">
+          <div>📍 ${org.address || 'Location not listed'}</div>
+          <div>📧 ${org.contact_email || 'Email not listed'}</div>
+          ${org.contact_phone ? `<div>📞 ${org.contact_phone}</div>` : ''}
+        </div>
+        <a href="messages.html?recipient_id=${org.user_id}&name=${encodeURIComponent(org.organization_name)}"
+           class="btn btn-primary" style="text-align:center; display:block;">Message Organization →</a>
+      </div>
+    `).join('');
+        });
+    </script>
+    <script src="js/chatbot.js"></script>
+</body>
+
+</html>
