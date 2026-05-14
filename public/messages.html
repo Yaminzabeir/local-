@@ -30,8 +30,10 @@
         <div class="container nav-container">
             <a href="index.html" class="logo">Local Volunteer <span class="highlight">Hub</span></a>
             <div class="nav-links">
-                <a href="dashboard.html" class="nav-link">Dashboard</a>
-                <a href="organizations.html" class="nav-link">Organizations</a>
+                <a href="dashboard.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+                <a href="organizations.html" class="nav-link" data-i18n="nav.organizations">Organizations</a>
+                <button class="lang-switch-btn" onclick="window.__toggleLang && window.__toggleLang()">🇸🇦
+                    العربية</button>
             </div>
         </div>
     </nav>
@@ -40,9 +42,10 @@
         <!-- Sidebar: Conversation List -->
         <aside class="sidebar" id="conversations-list" style="overflow-y:auto;">
             <div style="padding:1.25rem 1rem; border-bottom:1px solid var(--border-light);">
-                <div class="sidebar-logo" style="font-size:1rem;">Messages</div>
+                <div class="sidebar-logo" style="font-size:1rem;" data-i18n="msg.sidebar.title">Messages</div>
             </div>
-            <div style="padding:1rem; color:var(--text-muted); font-size:0.9rem;">Loading conversations...</div>
+            <div style="padding:1rem; color:var(--text-muted); font-size:0.9rem;" data-i18n="msg.sidebar.loading">
+                Loading conversations...</div>
         </aside>
 
         <!-- Main Chat Area -->
@@ -51,25 +54,32 @@
                 style="padding:1rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1rem; background:white; flex-shrink:0;">
                 <div class="user-avatar" id="chat-header-avatar"
                     style="width:36px;height:36px;font-size:0.9rem;display:none;">U</div>
-                <div style="font-weight:600; color:var(--text);" id="chat-header-name">Select a conversation</div>
+                <div style="font-weight:600; color:var(--text);" id="chat-header-name" data-i18n="msg.header.default">
+                    Select a conversation</div>
             </header>
 
             <div class="messages-list" id="messages-list">
                 <div class="empty-chat">
                     <div style="font-size:3rem; margin-bottom:1rem;">💬</div>
-                    <h3 style="font-size:1.1rem; margin-bottom:0.4rem;">Your Messages</h3>
-                    <p style="font-size:0.85rem;">Select a contact to start chatting</p>
+                    <h3 style="font-size:1.1rem; margin-bottom:0.4rem;" data-i18n="msg.empty.title">Your Messages</h3>
+                    <p style="font-size:0.85rem;" data-i18n="msg.empty.desc">Select a contact to start chatting</p>
                 </div>
             </div>
 
             <form class="input-area" id="message-form">
-                <input type="text" id="message-input" placeholder="Type a message..." disabled autocomplete="off">
-                <button type="submit" class="btn btn-primary" id="send-btn" disabled>Send →</button>
+                <input type="text" id="message-input" disabled autocomplete="off"
+                    data-i18n-placeholder="msg.inputPlaceholder" placeholder="Type a message...">
+                <button type="submit" class="btn btn-primary" id="send-btn" disabled data-i18n="msg.sendBtn">Send
+                    →</button>
             </form>
         </main>
     </div>
 
     <!-- Script -->
+    <script type="module">
+        import { toggleLanguage } from './js/i18n.js';
+        window.__toggleLang = toggleLanguage;
+    </script>
     <script type="module" src="js/messages.js"></script>
     <script src="js/chatbot.js"></script>
 </body>

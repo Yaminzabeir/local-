@@ -26,14 +26,10 @@ export const signUp = async (email, password, fullName, role) => {
         }
         // Save user profile to localStorage for dashboard
         const user = data.user || data.session?.user;
-        if (user) {
-            const profile = {
-                id: user.id,
-                email: user.email,
-                full_name: user.user_metadata?.full_name || fullName || '',
-                role: user.user_metadata?.role || role || 'volunteer',
-            };
+        const profile = data.profile; // Server returns the resolved database profile
+        if (user && profile) {
             localStorage.setItem('user_profile', JSON.stringify(profile));
+            // Backend already ensures the profile exists in the users table via service key
         }
         return { data, error: null };
     } catch (err) {
@@ -62,14 +58,10 @@ export const signIn = async (email, password) => {
         }
         // Save user profile to localStorage for dashboard
         const user = data.user || data.session?.user;
-        if (user) {
-            const profile = {
-                id: user.id,
-                email: user.email,
-                full_name: user.user_metadata?.full_name || '',
-                role: user.user_metadata?.role || 'volunteer',
-            };
+        const profile = data.profile; // Server returns the resolved database profile
+        if (user && profile) {
             localStorage.setItem('user_profile', JSON.stringify(profile));
+            // Backend already ensures the profile exists in the users table via service key
         }
         return { data, error: null };
     } catch (err) {

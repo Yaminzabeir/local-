@@ -17,15 +17,20 @@
         <div class="container nav-container">
             <a href="index.html" class="logo">Local Volunteer <span class="highlight">Hub</span></a>
             <div class="nav-links">
-                <a href="opportunities.html" class="nav-link">Opportunities</a>
-                <a href="organizations.html" class="nav-link">Organizations</a>
-                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="opportunities.html" class="nav-link" data-i18n="nav.opportunities">Opportunities</a>
+                <a href="organizations.html" class="nav-link" data-i18n="nav.organizations">Organizations</a>
+                <a href="dashboard.html" class="nav-link" id="nav-dashboard" style="display:none;"
+                    data-i18n="nav.dashboard">Dashboard</a>
+                <a href="login.html" class="btn btn-outline btn-sm" id="nav-login" data-i18n="nav.login">Log In</a>
+                <button class="lang-switch-btn" onclick="window.__toggleLang && window.__toggleLang()">🇸🇦
+                    العربية</button>
             </div>
         </div>
     </nav>
 
     <!-- Loading state -->
-    <div id="loading" style="padding-top:calc(var(--nav-height) + 4rem); text-align:center; color:var(--text-muted);">
+    <div id="loading" style="padding-top:calc(var(--nav-height) + 4rem); text-align:center; color:var(--text-muted);"
+        data-i18n="oppDetail.loading">
         Loading opportunity...
     </div>
 
@@ -33,7 +38,8 @@
     <div id="content" style="display:none;">
         <header class="detail-header">
             <div class="container">
-                <a href="opportunities.html" class="back-link">← Back to Opportunities</a>
+                <a href="opportunities.html" class="back-link" data-i18n="oppDetail.backLink">← Back to
+                    Opportunities</a>
                 <div style="color:var(--primary); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; font-size:0.8rem; margin-bottom:0.75rem;"
                     id="org-name">Organization</div>
                 <h1 style="font-size:2.5rem; letter-spacing:-0.03em;" id="opp-title">Opportunity Title</h1>
@@ -51,8 +57,10 @@
             <div class="description-box" id="opp-desc">Description goes here...</div>
 
             <div style="display:flex; gap:1rem; justify-content:center; padding-bottom:4rem;">
-                <button class="btn btn-primary btn-lg" id="apply-btn">Apply Now →</button>
-                <a href="opportunities.html" class="btn btn-outline btn-lg">Browse More</a>
+                <button class="btn btn-primary btn-lg" id="apply-btn" data-i18n="oppDetail.applyBtn">Apply Now
+                    →</button>
+                <a href="opportunities.html" class="btn btn-outline btn-lg" data-i18n="oppDetail.browseMore">Browse
+                    More</a>
             </div>
         </div>
     </div>
@@ -60,24 +68,31 @@
     <!-- Application Modal -->
     <div class="modal" id="apply-modal">
         <div class="modal-content">
-            <h2 class="modal-title">Apply for <span id="modal-opp-title"
+            <h2 class="modal-title"><span data-i18n="modal.applyFor">Apply for</span> <span id="modal-opp-title"
                     style="color:var(--primary);">Opportunity</span></h2>
-            <p class="modal-sub">Confirm your interest in this volunteer role.</p>
+            <p class="modal-sub" data-i18n="modal.confirmInterest">Confirm your interest in this volunteer role.</p>
             <form id="apply-form">
                 <input type="hidden" id="opp-id-input">
                 <div class="form-group">
-                    <label>Why are you interested?</label>
-                    <textarea rows="4" placeholder="Tell us briefly about your motivation..."></textarea>
+                    <label data-i18n="modal.whyInterested">Why are you interested?</label>
+                    <textarea rows="4" data-i18n-placeholder="modal.motivationPlaceholder"
+                        placeholder="Tell us briefly about your motivation..."></textarea>
                 </div>
                 <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1.5rem;">
                     <button type="button" class="btn btn-outline"
-                        onclick="document.getElementById('apply-modal').classList.remove('open')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Application →</button>
+                        onclick="document.getElementById('apply-modal').classList.remove('open')"
+                        data-i18n="modal.cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="modal.submitApp">Submit Application
+                        →</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script type="module">
+        import { toggleLanguage } from './js/i18n.js';
+        window.__toggleLang = toggleLanguage;
+    </script>
     <script type="module" src="js/opportunity-detail.js"></script>
     <script src="js/chatbot.js"></script>
 </body>

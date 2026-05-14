@@ -4,20 +4,23 @@
   Light theme · Purple primary · Orange accent
 */
 
+/* Arabic font for language support */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Amiri:wght@400;700&display=swap');
+
 /* ================================================
    Design Tokens
    ================================================ */
 :root {
-    --primary: #6c47ff;
-    --primary-dark: #5534e0;
-    --primary-light: #ede9ff;
-    --orange: #ff6b35;
-    --orange-dark: #e85a24;
-    --orange-light: #fff1ec;
+    --primary: #006C35;
+    --primary-dark: #004F27;
+    --primary-light: #E0F2E9;
+    --orange: #D4AF37;
+    --orange-dark: #B8962E;
+    --orange-light: #FFF8E7;
 
     --bg: #ffffff;
-    --bg-soft: #f7f8fc;
-    --bg-section: #f3f4f9;
+    --bg-soft: #FDFBEE;
+    --bg-section: #F6F4E8;
     --surface: #ffffff;
     --border: #e4e7ef;
     --border-light: #f0f2f8;
@@ -40,10 +43,11 @@
     --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 10px -5px rgba(0, 0, 0, 0.04);
     --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
-    --shadow-purple: 0 8px 30px rgba(108, 71, 255, 0.25);
-    --shadow-orange: 0 8px 30px rgba(255, 107, 53, 0.3);
+    --shadow-purple: 0 8px 30px rgba(0, 108, 53, 0.25);
+    --shadow-orange: 0 8px 30px rgba(212, 175, 55, 0.3);
 
     --font: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --font-ar: 'Cairo', 'Amiri', 'Plus Jakarta Sans', sans-serif;
     --container-max: 1180px;
     --nav-height: 72px;
 }
@@ -420,11 +424,13 @@ h6 {
 }
 
 .hero-subtitle {
-    font-size: 1.1rem;
-    color: var(--text-muted);
-    line-height: 1.75;
+    font-size: 1.15rem;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.7;
     margin-bottom: 2.5rem;
     max-width: 500px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 255, 255, 0.9);
 }
 
 .hero-actions {
@@ -1540,6 +1546,12 @@ h6 {
     align-items: center;
 }
 
+/* Add padding to prevent the floating AI chatbot from overlapping the chat interface */
+.msg-container .input-area {
+    padding-right: 90px;
+    /* Make room for Chatbot Toggle on Right in LTR */
+}
+
 #message-input {
     flex: 1;
     padding: 0.75rem 1.2rem;
@@ -2171,17 +2183,20 @@ h6 {
 }
 
 .chatbot-msg-bot .chatbot-bubble {
-    background: var(--bg-soft);
-    border: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     border-bottom-left-radius: 4px;
     color: var(--text);
 }
 
 .chatbot-msg-user .chatbot-bubble {
-    background: var(--primary);
+    background: rgba(0, 108, 53, 0.7);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(0, 108, 53, 0.4);
     color: white;
     border-bottom-right-radius: 4px;
-    box-shadow: 0 4px 12px rgba(108, 71, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 108, 53, 0.25);
 }
 
 .chatbot-bubble ul {
@@ -2357,4 +2372,131 @@ h6 {
         bottom: 72px;
         max-height: 70vh;
     }
+}
+
+/* ================================================
+   Language Switcher
+   ================================================ */
+.lang-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 99px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border: 2px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    font-family: var(--font);
+    letter-spacing: 0.02em;
+}
+
+.lang-switch-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+/* ================================================
+   Arabic Font Override (no layout changes)
+   ================================================ */
+html[dir="rtl"] body,
+html[dir="rtl"] button,
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select {
+    font-family: var(--font-ar);
+}
+
+html[dir="rtl"] .lang-switch-btn {
+    font-family: var(--font-ar);
+}
+
+/* RTL Layout Fixes */
+html[dir="rtl"] .nav-links {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+html[dir="rtl"] .hero-inner,
+html[dir="rtl"] .features-grid,
+html[dir="rtl"] .steps-grid,
+html[dir="rtl"] .footer-grid,
+html[dir="rtl"] .dashboard-container {
+    text-align: right;
+}
+
+html[dir="rtl"] .back-link,
+html[dir="rtl"] .lang-switch-btn {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .auth-right .auth-box {
+    margin-right: auto;
+    margin-left: 0;
+}
+
+html[dir="rtl"] .sidebar {
+    border-right: none;
+    border-left: 1px solid var(--border);
+}
+
+/* Mirror chatbot position for RTL */
+html[dir="rtl"] .chatbot-container {
+    right: auto;
+    left: 2rem;
+}
+
+html[dir="rtl"] .chatbot-window {
+    right: auto;
+    left: 0;
+    transform-origin: bottom left;
+}
+
+/* Adjust input area padding to protect the Send button from the mirrored toggle */
+html[dir="rtl"] .msg-container .input-area {
+    padding-right: 1.5rem;
+    /* Reset right padding */
+    padding-left: 90px;
+    /* Make room for Chatbot Toggle on Left in RTL */
+}
+
+/* Custom pattern classes */
+.bg-sadu::before {
+    content: '';
+    background-image: url('../img/sadu-pattern.png');
+    background-repeat: repeat;
+    background-size: 200px;
+    opacity: 0.05;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+
+
+/* AI Chatbot Distinct Pattern Background */
+/* .chatbot-window is already position: absolute */
+.chatbot-window::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../img/sadu-bot.png');
+    background-size: 180px;
+    background-repeat: repeat;
+    opacity: 0.16;
+    pointer-events: none;
+    z-index: 0;
+    mix-blend-mode: multiply;
+}
+
+.chatbot-window>* {
+    position: relative;
+    z-index: 1;
 }

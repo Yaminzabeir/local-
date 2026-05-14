@@ -16,11 +16,14 @@
     <div class="auth-container">
         <!-- Left Panel -->
         <div class="auth-left">
-            <a href="/"
-                style="color:var(--orange); font-size:1.4rem; font-weight:800; margin-bottom:3rem; display:block;">Local
-                Volunteer <span style="color:var(--yellow);">Hub</span></a>
-            <h1>Join thousands of<br>volunteers today! 🌱</h1>
-            <p style="margin-top:1rem;">Create your free account and start making a difference in your local community
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3rem; position:relative; z-index:1;">
+                <a href="/"
+                    style="color:var(--orange); font-size:1.4rem; font-weight:800;">Local
+                    Volunteer <span style="color:var(--yellow);">Hub</span></a>
+                <button class="lang-switch-btn" onclick="window.__toggleLang && window.__toggleLang()">🇸🇦 العربية</button>
+            </div>
+            <h1 data-i18n-html="register.title">Join thousands of<br>volunteers today! 🌱</h1>
+            <p style="margin-top:1rem;" data-i18n="register.desc">Create your free account and start making a difference in your local community
                 in minutes.</p>
             <div
                 style="margin-top:3rem; display:flex; flex-direction:column; gap:0.75rem; position:relative; z-index:1;">
@@ -28,25 +31,25 @@
                     style="display:flex; align-items:center; gap:0.75rem; color:rgba(255,255,255,0.9); font-size:0.9rem;">
                     <span
                         style="width:22px;height:22px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;">✓</span>
-                    Free to join, always
+                    <span data-i18n="register.check1">Free to join, always</span>
                 </div>
                 <div
                     style="display:flex; align-items:center; gap:0.75rem; color:rgba(255,255,255,0.9); font-size:0.9rem;">
                     <span
                         style="width:22px;height:22px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;">✓</span>
-                    Access 100+ opportunities
+                    <span data-i18n="register.check2">Access 100+ opportunities</span>
                 </div>
                 <div
                     style="display:flex; align-items:center; gap:0.75rem; color:rgba(255,255,255,0.9); font-size:0.9rem;">
                     <span
                         style="width:22px;height:22px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;">✓</span>
-                    Track your volunteer hours
+                    <span data-i18n="register.check3">Track your volunteer hours</span>
                 </div>
                 <div
                     style="display:flex; align-items:center; gap:0.75rem; color:rgba(255,255,255,0.9); font-size:0.9rem;">
                     <span
                         style="width:22px;height:22px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;">✓</span>
-                    Message organizations directly
+                    <span data-i18n="register.check4">Message organizations directly</span>
                 </div>
             </div>
         </div>
@@ -55,38 +58,38 @@
         <div class="auth-right">
             <div class="auth-box">
                 <a href="/"
-                    style="color:var(--text-muted); font-size:0.85rem; display:flex; align-items:center; gap:0.4rem; margin-bottom:2rem;">←
+                    style="color:var(--text-muted); font-size:0.85rem; display:flex; align-items:center; gap:0.4rem; margin-bottom:2rem;" data-i18n="register.backHome">←
                     Back to home</a>
-                <h2 class="auth-box-title">Create your free account</h2>
-                <p class="auth-box-sub">Already have an account? <a href="login.html"
-                        style="color:var(--primary); font-weight:600;">Log in →</a></p>
+                <h2 class="auth-box-title" data-i18n="register.formTitle">Create your free account</h2>
+                <p class="auth-box-sub"><span data-i18n="register.hasAccount">Already have an account?</span> <a href="login.html"
+                        style="color:var(--primary); font-weight:600;" data-i18n="register.loginLink">Log in →</a></p>
 
                 <form id="register-form">
                     <div class="form-group">
-                        <label for="fullname">Full Name</label>
-                        <input type="text" id="fullname" required placeholder="John Doe">
+                        <label for="fullname" data-i18n="register.fullName">Full Name</label>
+                        <input type="text" id="fullname" required placeholder="John Doe" data-i18n-placeholder="register.namePlaceholder">
                     </div>
                     <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" required placeholder="you@example.com">
+                        <label for="email" data-i18n="register.email">Email Address</label>
+                        <input type="email" id="email" required placeholder="you@example.com" data-i18n-placeholder="register.emailPlaceholder">
                     </div>
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" required placeholder="At least 8 characters">
+                        <label for="password" data-i18n="register.password">Password</label>
+                        <input type="password" id="password" required placeholder="At least 8 characters" data-i18n-placeholder="register.passwordPlaceholder">
                     </div>
                     <div class="form-group">
-                        <label for="role">I am joining as a...</label>
+                        <label for="role" data-i18n="register.role">I am joining as a...</label>
                         <select id="role" required>
-                            <option value="volunteer">Volunteer – I want to find opportunities</option>
-                            <option value="organization">Organization – I want to post opportunities</option>
+                            <option value="volunteer" data-i18n="register.roleVolunteer">Volunteer – I want to find opportunities</option>
+                            <option value="organization" data-i18n="register.roleOrg">Organization – I want to post opportunities</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">Create Account
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;" data-i18n="register.submit">Create Account
                         →</button>
                 </form>
 
                 <div id="message" style="text-align:center; margin-top:1rem; font-size:0.9rem;"></div>
-                <p style="text-align:center; font-size:0.78rem; color:var(--text-light); margin-top:1.25rem;">By signing
+                <p style="text-align:center; font-size:0.78rem; color:var(--text-light); margin-top:1.25rem;" data-i18n="register.terms">By signing
                     up, you agree to our Terms of Service and Privacy Policy.</p>
             </div>
         </div>
@@ -94,6 +97,9 @@
 
     <script type="module">
         import { signUp } from './js/supabase-client.js';
+        import { t, toggleLanguage } from './js/i18n.js';
+        window.__toggleLang = toggleLanguage;
+
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const fullName = document.getElementById('fullname').value;
@@ -101,14 +107,14 @@
             const password = document.getElementById('password').value;
             const role = document.getElementById('role').value;
             const msg = document.getElementById('message');
-            msg.textContent = 'Creating account...';
+            msg.textContent = t('register.creating');
             msg.style.color = 'var(--text-muted)';
             const { data, error } = await signUp(email, password, fullName, role);
             if (error) {
                 msg.textContent = `Error: ${error.message}`;
                 msg.style.color = 'var(--red)';
             } else {
-                msg.textContent = '🎉 Success! Redirecting to dashboard...';
+                msg.textContent = t('register.success');
                 msg.style.color = 'var(--green)';
                 setTimeout(() => window.location.href = 'dashboard.html', 800);
             }

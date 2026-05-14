@@ -1,16 +1,17 @@
 import { supabase, signOut } from './supabase-client.js';
+import { t, i18nReady } from './i18n.js';
 
 let currentUser = null;
 let currentPartnerId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Auth Check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        window.location.href = 'login.html';
-        return;
-    }
-    currentUser = user;
+    await i18nReady;
+
+    // 1. Auth Check — use localStorage (consistent with dashboard.js)
+    const stored = localStorage.getItem('user_profile');
+    if (!stored) { window.location.href = 'login.html'; return; }
+    try { currentUser = JSON.parse(stored); } catch (e) { window.location.href = 'login.html'; return; }
+    if (!currentUser || !currentUser.id) { window.location.href = 'login.html'; return; }
 
     // 2. Parse URL Query for Partner (e.g., ?recipient_id=UID&name=OrgName)
     const urlParams = new URLSearchParams(window.location.search);
@@ -31,10 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadConversations(targetId = null, targetName = null) {
     const list = document.getElementById('conversations-list');
-    list.innerHTML = '<div style="padding: 1.5rem; color: var(--text-muted);">Loading conversations...</div>';
+    list.innerHTML = `<div style="padding: 1.5rem; color: var(--text-muted);">${t('msg.sidebar.loading')}</div>`;
 
     // 1. Fetch all messages involving me
-    // (This is inefficient for scale, but standard for simple Supabase client-only apps without backend functions)
     const { data: messages, error } = await supabase
         .from('messages')
         .select(`
@@ -47,7 +47,7 @@ async function loadConversations(targetId = null, targetName = null) {
 
     if (error) {
         console.error('Error loading messages:', error);
-        list.innerHTML = '<div style="padding: 1rem; color: #ef4444;">Error loading chats.</div>';
+        list.innerHTML = `<div style="padding: 1rem; color: #ef4444;">${t('msg.errorLoadChats')}</div>`;
         return;
     }
 
@@ -77,8 +77,8 @@ async function loadConversations(targetId = null, targetName = null) {
     if (targetId && !partnersMap.has(targetId)) {
         partnersMap.set(targetId, {
             id: targetId,
-            name: targetName || 'New Contact',
-            lastMessage: 'Start a conversation',
+            name: targetName || t('msg.newContact'),
+            lastMessage: t('msg.startConversation'),
             timestamp: new Date().toISOString(),
             unread: false,
             isNew: true
@@ -90,7 +90,7 @@ async function loadConversations(targetId = null, targetName = null) {
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     if (partners.length === 0) {
-        list.innerHTML = '<div style="padding: 1.5rem; color: var(--text-muted);">No conversations yet.</div>';
+        list.innerHTML = `<div style="padding: 1.5rem; color: var(--text-muted);">${t('msg.sidebar.noConversations')}</div>`;
     } else {
         list.innerHTML = partners.map(p => `
             <div class="user-item ${p.id === targetId ? 'active' : ''}" onclick="openChat('${p.id}', '${p.name}')" id="user-${p.id}">
@@ -138,7 +138,7 @@ window.openChat = async (partnerId, partnerName) => {
 
 async function loadMessages(partnerId) {
     const chatContainer = document.getElementById('messages-list');
-    chatContainer.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted)">Loading...</div>';
+    chatContainer.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-muted)">${t('msg.loading')}</div>`;
 
     const { data: messages, error } = await supabase
         .from('messages')
@@ -148,12 +148,12 @@ async function loadMessages(partnerId) {
 
     if (error) {
         console.error(error);
-        chatContainer.innerHTML = '<div style="text-align:center; color:#ef4444">Error loading messages</div>';
+        chatContainer.innerHTML = `<div style="text-align:center; color:#ef4444">${t('msg.errorLoad')}</div>`;
         return;
     }
 
     if (!messages || messages.length === 0) {
-        chatContainer.innerHTML = '<div style="text-align:center; margin-top:auto; padding:2rem; color:var(--text-muted); opacity: 0.7;">No messages yet. Say hello! 👋</div>';
+        chatContainer.innerHTML = `<div style="text-align:center; margin-top:auto; padding:2rem; color:var(--text-muted); opacity: 0.7;">${t('msg.noMessages')}</div>`;
         return;
     }
 
@@ -199,18 +199,15 @@ async function sendMessage(e) {
     const chatContainer = document.getElementById('messages-list');
 
     // Remove "No messages" if exists
-    if (chatContainer.querySelector('.text-align-center')) { // Rough check, better to match specific class
-        // Actually better to just append. If it was empty, innerHTML will be overwritten by map in loadMessages, 
-        // but here we are appending. 
-        // If "No messages" text is present, clear it first.
-        if (chatContainer.textContent.includes('No messages yet')) chatContainer.innerHTML = '';
+    if (chatContainer.textContent.includes(t('msg.noMessages')) || chatContainer.textContent.includes('No messages yet')) {
+        chatContainer.innerHTML = '';
     }
 
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const msgHtml = `
         <div class="message-bubble msg-sent" id="${tempId}" style="opacity: 0.7">
             ${text}
-            <span class="msg-time" style="color: rgba(255,255,255,0.7)">${time} (Sending...)</span>
+            <span class="msg-time" style="color: rgba(255,255,255,0.7)">${time} (${t('msg.sending')})</span>
         </div>
     `;
     chatContainer.insertAdjacentHTML('beforeend', msgHtml);
@@ -231,7 +228,7 @@ async function sendMessage(e) {
 
     if (error) {
         console.error('Send error:', error);
-        alert('Failed to send message.');
+        alert(t('msg.sendError'));
         document.getElementById(tempId).remove();
         input.value = text; // Restore text
     } else {

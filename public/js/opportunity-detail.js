@@ -1,6 +1,23 @@
 import { supabase, getCurrentUser } from './supabase-client.js';
+import { t, i18nReady } from './i18n.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await i18nReady;
+
+    // ---- Navbar Auth State ----
+    const stored = localStorage.getItem('user_profile');
+    const user = stored ? JSON.parse(stored) : null;
+    const loginLink = document.getElementById('nav-login');
+    const dashboardLink = document.getElementById('nav-dashboard');
+
+    if (user && user.id) {
+        if (loginLink) loginLink.style.display = 'none';
+        if (dashboardLink) dashboardLink.style.display = 'inline-block';
+    } else {
+        if (loginLink) loginLink.style.display = 'inline-block';
+        if (dashboardLink) dashboardLink.style.display = 'none';
+    }
+
     // 1. Get ID from URL
     const urlParams = new URLSearchParams(window.location.search);
     const oppId = urlParams.get('id');
@@ -22,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (error || !opp) {
         console.error('Error fetching details:', error);
-        document.getElementById('loading').innerHTML = '<h1>Opportunity not found.</h1>';
+        document.getElementById('loading').innerHTML = `<h1>${t('oppDetail.notFound')}</h1>`;
         return;
     }
 
@@ -37,8 +54,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('opp-location').textContent = opp.location || 'Remote';
     document.getElementById('opp-date').textContent = new Date(opp.date).toLocaleDateString();
-    document.getElementById('opp-time').textContent = opp.start_time ? `${opp.start_time.slice(0, 5)} - ${opp.end_time.slice(0, 5)}` : 'Flexible';
-    document.getElementById('opp-slots').textContent = `${opp.slots_available} slots available`;
+    document.getElementById('opp-time').textContent = opp.start_time ? `${opp.start_time.slice(0, 5)} - ${opp.end_time.slice(0, 5)}` : t('oppDetail.flexible');
+    document.getElementById('opp-slots').textContent = `${opp.slots_available} ${t('oppDetail.slotsAvailable')}`;
 
     const applyBtn = document.getElementById('apply-btn');
     applyBtn.onclick = () => {
@@ -50,10 +67,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 4. Handle Application
     document.getElementById('apply-form').onsubmit = async (e) => {
         e.preventDefault();
-        const user = await getCurrentUser();
+        // Auth check — use localStorage (consistent with dashboard.js)
+        const stored = localStorage.getItem('user_profile');
+        const user = stored ? JSON.parse(stored) : null;
 
-        if (!user) {
-            alert('Please login to apply.');
+        if (!user || !user.id) {
+            alert(t('modal.loginRequired'));
             window.location.href = `login.html?redirect=opportunity.html?id=${oppId}`;
             return;
         }
@@ -72,17 +91,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (applyError) {
                 if (applyError.code === '23505') {
-                    alert('You have already applied for this opportunity.');
+                    alert(t('modal.alreadyApplied'));
                 } else {
                     console.error(applyError);
-                    alert('Error submitting application: ' + applyError.message);
+                    alert(t('modal.appError') + ': ' + applyError.message);
                 }
             } else {
-                alert('Application submitted successfully!');
+                alert(t('modal.appSuccess'));
             }
         } catch (err) {
             console.error(err);
-            alert('Unexpected error.');
+            alert(t('modal.unexpectedError'));
         }
     };
 });

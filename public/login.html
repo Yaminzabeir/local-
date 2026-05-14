@@ -16,27 +16,30 @@
     <div class="auth-container">
         <!-- Left Panel -->
         <div class="auth-left">
-            <a href="/"
-                style="color:var(--orange); font-size:1.4rem; font-weight:800; margin-bottom:3rem; display:block;">Local
-                Volunteer <span style="color:var(--yellow);">Hub</span></a>
-            <h1>Welcome back,<br>volunteer! 👋</h1>
-            <p style="margin-top:1rem;">Log in to your account to browse opportunities, track your hours, and connect
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3rem; position:relative; z-index:1;">
+                <a href="/"
+                    style="color:var(--orange); font-size:1.4rem; font-weight:800;">Local
+                    Volunteer <span style="color:var(--yellow);">Hub</span></a>
+                <button class="lang-switch-btn" onclick="window.__toggleLang && window.__toggleLang()">🇸🇦 العربية</button>
+            </div>
+            <h1 data-i18n-html="login.welcome">Welcome back,<br>volunteer! 👋</h1>
+            <p style="margin-top:1rem;" data-i18n="login.desc">Log in to your account to browse opportunities, track your hours, and connect
                 with organizations making a difference.</p>
             <div style="margin-top:3rem; display:flex; flex-direction:column; gap:1rem; position:relative; z-index:1;">
                 <div
                     style="background:rgba(255,255,255,0.1); border-radius:12px; padding:1rem 1.25rem; display:flex; gap:0.75rem; align-items:center;">
                     <span style="font-size:1.5rem;">🔍</span>
                     <div>
-                        <div style="font-weight:700; font-size:0.9rem;">Find Opportunities</div>
-                        <div style="font-size:0.8rem; opacity:0.75;">Filter by location, date & cause</div>
+                        <div style="font-weight:700; font-size:0.9rem;" data-i18n="login.findOpps">Find Opportunities</div>
+                        <div style="font-size:0.8rem; opacity:0.75;" data-i18n="login.findOppsDesc">Filter by location, date & cause</div>
                     </div>
                 </div>
                 <div
                     style="background:rgba(255,255,255,0.1); border-radius:12px; padding:1rem 1.25rem; display:flex; gap:0.75rem; align-items:center;">
                     <span style="font-size:1.5rem;">📊</span>
                     <div>
-                        <div style="font-weight:700; font-size:0.9rem;">Track Your Impact</div>
-                        <div style="font-size:0.8rem; opacity:0.75;">Log hours & see your difference</div>
+                        <div style="font-weight:700; font-size:0.9rem;" data-i18n="login.trackImpact">Track Your Impact</div>
+                        <div style="font-size:0.8rem; opacity:0.75;" data-i18n="login.trackImpactDesc">Log hours & see your difference</div>
                     </div>
                 </div>
             </div>
@@ -46,22 +49,22 @@
         <div class="auth-right">
             <div class="auth-box">
                 <a href="/"
-                    style="color:var(--text-muted); font-size:0.85rem; display:flex; align-items:center; gap:0.4rem; margin-bottom:2rem;">←
+                    style="color:var(--text-muted); font-size:0.85rem; display:flex; align-items:center; gap:0.4rem; margin-bottom:2rem;" data-i18n="login.backHome">←
                     Back to home</a>
-                <h2 class="auth-box-title">Sign in to your account</h2>
-                <p class="auth-box-sub">Don't have an account? <a href="register.html"
-                        style="color:var(--primary); font-weight:600;">Sign up free →</a></p>
+                <h2 class="auth-box-title" data-i18n="login.title">Sign in to your account</h2>
+                <p class="auth-box-sub"><span data-i18n="login.noAccount">Don't have an account?</span> <a href="register.html"
+                        style="color:var(--primary); font-weight:600;" data-i18n="login.signUpLink">Sign up free →</a></p>
 
                 <form id="login-form">
                     <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" required placeholder="you@example.com">
+                        <label for="email" data-i18n="login.email">Email Address</label>
+                        <input type="email" id="email" required placeholder="you@example.com" data-i18n-placeholder="login.emailPlaceholder">
                     </div>
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" required placeholder="Enter your password">
+                        <label for="password" data-i18n="login.password">Password</label>
+                        <input type="password" id="password" required placeholder="Enter your password" data-i18n-placeholder="login.passwordPlaceholder">
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">Log In
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;" data-i18n="login.submit">Log In
                         →</button>
                 </form>
 
@@ -72,19 +75,22 @@
 
     <script type="module">
         import { signIn } from './js/supabase-client.js';
+        import { t, toggleLanguage } from './js/i18n.js';
+        window.__toggleLang = toggleLanguage;
+
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const msg = document.getElementById('message');
-            msg.textContent = 'Signing in...';
+            msg.textContent = t('login.signingIn');
             msg.style.color = 'var(--text-muted)';
             const { data, error } = await signIn(email, password);
             if (error) {
                 msg.textContent = `Error: ${error.message}`;
                 msg.style.color = 'var(--red)';
             } else {
-                msg.textContent = 'Success! Redirecting...';
+                msg.textContent = t('login.success');
                 msg.style.color = 'var(--green)';
                 setTimeout(() => window.location.href = 'dashboard.html', 1000);
             }

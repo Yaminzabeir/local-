@@ -1,6 +1,23 @@
 import { supabase, getCurrentUser } from './supabase-client.js';
+import { t, i18nReady } from './i18n.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await i18nReady;
+
+    // ---- Navbar Auth State ----
+    const stored = localStorage.getItem('user_profile');
+    const user = stored ? JSON.parse(stored) : null;
+    const loginLink = document.querySelector('a[href="login.html"]');
+    const dashboardLink = document.querySelector('a[href="dashboard.html"]');
+
+    if (user && user.id) {
+        if (loginLink) loginLink.style.display = 'none';
+        if (dashboardLink) dashboardLink.style.display = 'inline-block';
+    } else {
+        if (loginLink) loginLink.style.display = 'inline-block';
+        if (dashboardLink) dashboardLink.style.display = 'none';
+    }
+
     loadOpportunities();
 
     // Search Logic
@@ -13,9 +30,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle Application Submit
     document.getElementById('apply-form').onsubmit = async (e) => {
         e.preventDefault();
-        const user = await getCurrentUser();
-        if (!user) {
-            alert('Please login to apply.');
+        // Auth check — use localStorage (consistent with dashboard.js)
+        const stored = localStorage.getItem('user_profile');
+        const user = stored ? JSON.parse(stored) : null;
+        if (!user || !user.id) {
+            alert(t('modal.loginRequired'));
             window.location.href = 'login.html';
             return;
         }
@@ -37,13 +56,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) {
                 if (error.code === '23505') { // Unique violation
-                    alert('You have already applied for this opportunity.');
+                    alert(t('modal.alreadyApplied'));
                 } else {
                     console.error(error);
-                    alert('Error submitting application.');
+                    alert(t('modal.appError'));
                 }
             } else {
-                alert('Application submitted successfully!');
+                alert(t('modal.appSuccess'));
             }
         } catch (err) {
             console.error(err);
@@ -53,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadOpportunities(searchPrefix = '', locationFilter = '') {
     const grid = document.getElementById('opportunities-grid');
-    grid.innerHTML = '<div class="loading-state" style="grid-column: 1/-1; text-align: center;">Loading opportunities...</div>';
+    grid.innerHTML = `<div class="loading-state" style="grid-column: 1/-1; text-align: center;">${t('opps.loading')}</div>`;
 
     let query = supabase
         .from('opportunities')
@@ -65,6 +84,7 @@ async function loadOpportunities(searchPrefix = '', locationFilter = '') {
             date,
             slots_available,
             organization_id,
+            created_at,
             organizations ( organization_name )
         `)
         .eq('status', 'active');
@@ -82,20 +102,21 @@ async function loadOpportunities(searchPrefix = '', locationFilter = '') {
 
     if (error) {
         console.error('Error fetching opportunities:', error);
-        grid.innerHTML = '<p>Error loading opportunities.</p>';
+        grid.innerHTML = `<p>${t('opps.error')}</p>`;
         return;
     }
 
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-        grid.innerHTML = '<p>No opportunities found.</p>';
+        grid.innerHTML = `<p>${t('opps.noResults')}</p>`;
         return;
     }
 
     opportunities.forEach(opp => {
         const card = document.createElement('div');
         card.className = 'glass-card opp-card';
+        // Post Date is created_at, Deadline is the event date
         card.innerHTML = `
             <div class="opp-org-name">${opp.organizations?.organization_name || 'Organization'}</div>
             <a href="opportunity.html?id=${opp.id}" style="text-decoration:none; color:inherit;">
@@ -103,21 +124,33 @@ async function loadOpportunities(searchPrefix = '', locationFilter = '') {
             </a>
             <p style="color: var(--text-muted); flex-grow: 1;">${opp.description.substring(0, 150)}...</p>
             
+            <div class="opp-metadata-extended" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--text-muted);" data-i18n="opps.postDate">${t('opps.postDate')}</span>
+                    <span style="font-weight:600;">${new Date(opp.created_at).toLocaleDateString()}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--text-muted);" data-i18n="opps.eventDate">${t('opps.eventDate')}</span>
+                    <span style="font-weight:600; color:#2563eb;">${new Date(opp.date).toLocaleDateString()}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--text-muted);" data-i18n="opps.deadline">${t('opps.deadline')}</span>
+                    <span style="font-weight:600; color:#ef4444;">${new Date(opp.deadline || opp.date).toLocaleDateString()}</span>
+                </div>
+            </div>
+
             <div class="opp-details">
                 <div class="opp-detail-item">
                     <span>📍</span> ${opp.location || 'Remote'}
                 </div>
                 <div class="opp-detail-item">
-                    <span>📅</span> ${new Date(opp.date).toLocaleDateString()}
-                </div>
-                 <div class="opp-detail-item">
-                    <span>👥</span> ${opp.slots_available} slots left
+                    <span>👥</span> ${opp.slots_available} ${t('opps.slotsLeft')}
                 </div>
             </div>
 
             <div class="action-row">
-                <a href="opportunity.html?id=${opp.id}" class="btn btn-secondary">View Details</a>
-                <button class="btn btn-primary btn-apply" data-id="${opp.id}" data-title="${opp.title}">Apply Now</button>
+                <a href="opportunity.html?id=${opp.id}" class="btn btn-secondary" data-i18n="opps.viewDetails">${t('opps.viewDetails')}</a>
+                <button class="btn btn-primary btn-apply" data-id="${opp.id}" data-title="${opp.title}" data-i18n="opps.applyNow">${t('opps.applyNow')}</button>
             </div>
         `;
         grid.appendChild(card);

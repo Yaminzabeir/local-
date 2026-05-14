@@ -1,0 +1,94 @@
+{
+  "user": {
+    "id": "91b0aa18-4310-496e-a07c-f9cbee01e903",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "orgtest3@example.com",
+    "email_confirmed_at": "2026-02-23T20:23:48.227154Z",
+    "phone": "",
+    "confirmed_at": "2026-02-23T20:23:48.227154Z",
+    "last_sign_in_at": "2026-02-23T20:23:48.395896398Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Org Test 3",
+      "role": "organization"
+    },
+    "identities": [
+      {
+        "identity_id": "055ae81d-90ad-44a1-b769-400bde2e0650",
+        "id": "91b0aa18-4310-496e-a07c-f9cbee01e903",
+        "user_id": "91b0aa18-4310-496e-a07c-f9cbee01e903",
+        "identity_data": {
+          "email": "orgtest3@example.com",
+          "email_verified": false,
+          "phone_verified": false,
+          "sub": "91b0aa18-4310-496e-a07c-f9cbee01e903"
+        },
+        "provider": "email",
+        "last_sign_in_at": "2026-02-23T20:23:48.225563Z",
+        "created_at": "2026-02-23T20:23:48.225615Z",
+        "updated_at": "2026-02-23T20:23:48.225615Z",
+        "email": "orgtest3@example.com"
+      }
+    ],
+    "created_at": "2026-02-23T20:23:48.222709Z",
+    "updated_at": "2026-02-23T20:23:48.398097Z",
+    "is_anonymous": false
+  },
+  "session": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImY0OWNhYjgyLTBjYzMtNDgzOS05OTU0LTRhOTg1OWNjMjczYSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3JqcmJ6d3FycGN6bXpoa2Z2eW95LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI5MWIwYWExOC00MzEwLTQ5NmUtYTA3Yy1mOWNiZWUwMWU5MDMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzcxODgxODI4LCJpYXQiOjE3NzE4NzgyMjgsImVtYWlsIjoib3JndGVzdDNAZXhhbXBsZS5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJPcmcgVGVzdCAzIiwicm9sZSI6Im9yZ2FuaXphdGlvbiJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzcxODc4MjI4fV0sInNlc3Npb25faWQiOiIyZjE3ZmU0ZC1lYjBkLTQxMDgtYTVlMS1jYmQzZDFlMmNjZWUiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.qd6ribusCEwjfdtfVGl9yzQjnHWuvBRc7L4Cf4FElhgR6J943aUNtbqtDhQO938BD9ck9OkmIPfHFEd4IM1dKg",
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "expires_at": 1771881828,
+    "refresh_token": "eobxwe6yzhbf",
+    "user": {
+      "id": "91b0aa18-4310-496e-a07c-f9cbee01e903",
+      "aud": "authenticated",
+      "role": "authenticated",
+      "email": "orgtest3@example.com",
+      "email_confirmed_at": "2026-02-23T20:23:48.227154Z",
+      "phone": "",
+      "confirmed_at": "2026-02-23T20:23:48.227154Z",
+      "last_sign_in_at": "2026-02-23T20:23:48.395896398Z",
+      "app_metadata": {
+        "provider": "email",
+        "providers": [
+          "email"
+        ]
+      },
+      "user_metadata": {
+        "email_verified": true,
+        "full_name": "Org Test 3",
+        "role": "organization"
+      },
+      "identities": [
+        {
+          "identity_id": "055ae81d-90ad-44a1-b769-400bde2e0650",
+          "id": "91b0aa18-4310-496e-a07c-f9cbee01e903",
+          "user_id": "91b0aa18-4310-496e-a07c-f9cbee01e903",
+          "identity_data": {
+            "email": "orgtest3@example.com",
+            "email_verified": false,
+            "phone_verified": false,
+            "sub": "91b0aa18-4310-496e-a07c-f9cbee01e903"
+          },
+          "provider": "email",
+          "last_sign_in_at": "2026-02-23T20:23:48.225563Z",
+          "created_at": "2026-02-23T20:23:48.225615Z",
+          "updated_at": "2026-02-23T20:23:48.225615Z",
+          "email": "orgtest3@example.com"
+        }
+      ],
+      "created_at": "2026-02-23T20:23:48.222709Z",
+      "updated_at": "2026-02-23T20:23:48.398097Z",
+      "is_anonymous": false
+    },
+    "weak_password": null
+  }
+}

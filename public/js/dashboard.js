@@ -1,6 +1,10 @@
 import { supabase, signOut } from './supabase-client.js';
+import { t, i18nReady } from './i18n.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for translations to load before rendering UI
+    await i18nReady;
+
     // 1. Check Auth — read profile from localStorage (saved on signup/login)
     const stored = localStorage.getItem('user_profile');
     if (!stored) {
@@ -53,11 +57,11 @@ async function initVolunteerDashboard(user, profile) {
     // Sidebar items
     const nav = document.getElementById('sidebar-nav');
     nav.innerHTML = `
-        <div class="nav-item active" onclick="switchSection('volunteer-dashboard', this)">📊 Dashboard</div>
-        <div class="nav-item" onclick="window.location.href='opportunities.html'">🔍 Browse</div>
-        <div class="nav-item" onclick="window.location.href='organizations.html'">🏢 Organizations</div>
-        <div class="nav-item" onclick="window.location.href='messages.html'">💬 Messages</div>
-        <div class="nav-item" onclick="switchSection('notifications-dashboard', this); loadNotifications('${user.id}')">🔔 Notifications</div>
+        <div class="nav-item active" onclick="switchSection('volunteer-dashboard', this)" data-i18n="dash.sidebar.dashboard">${t('dash.sidebar.dashboard')}</div>
+        <div class="nav-item" onclick="window.location.href='opportunities.html'" data-i18n="dash.sidebar.browse">${t('dash.sidebar.browse')}</div>
+        <div class="nav-item" onclick="window.location.href='organizations.html'" data-i18n="dash.sidebar.organizations">${t('dash.sidebar.organizations')}</div>
+        <div class="nav-item" onclick="window.location.href='messages.html'" data-i18n="dash.sidebar.messages">${t('dash.sidebar.messages')}</div>
+        <div class="nav-item" onclick="switchSection('notifications-dashboard', this); loadNotifications('${user.id}')" data-i18n="dash.sidebar.notifications">${t('dash.sidebar.notifications')}</div>
     `;
 
     // Fetch Applications
@@ -66,26 +70,91 @@ async function initVolunteerDashboard(user, profile) {
         .select(`
             *,
             opportunities (
-                title,
+                *,
                 organizations (organization_name)
             )
         `)
         .eq('volunteer_id', user.id);
 
     const list = document.getElementById('applications-list');
+    const approvedList = document.getElementById('approved-apps-list');
+    const rejectedList = document.getElementById('rejected-apps-list');
+    
     document.getElementById('vol-applications').textContent = apps ? apps.length : 0;
 
     if (apps && apps.length > 0) {
+        // 1. All Applications
         list.innerHTML = apps.map(app => `
             <tr>
                 <td>${app.opportunities.title}</td>
                 <td>${app.opportunities.organizations?.organization_name || 'N/A'}</td>
                 <td>${new Date(app.applied_at).toLocaleDateString()}</td>
-                <td><span class="status-badge status-${app.status}">${app.status}</span></td>
+                <td><span class="status-badge status-${app.status}">${t('status.' + app.status)}</span></td>
             </tr>
         `).join('');
+
+        // 2. Approved Applications
+        const approvedApps = apps.filter(a => a.status === 'approved');
+        if (approvedApps.length > 0) {
+            approvedList.innerHTML = approvedApps.map(app => `
+                <tr>
+                    <td>${app.opportunities.title}</td>
+                    <td>${app.opportunities.organizations?.organization_name || 'N/A'}</td>
+                    <td>${new Date(app.applied_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="viewApprovedDetails('${app.id}')" data-i18n="dash.viewDetails">${t('dash.viewDetails')}</button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            approvedList.innerHTML = `<tr><td colspan="4" class="text-center" data-i18n="dash.noApprovedApps">${t('dash.noApprovedApps')}</td></tr>`;
+        }
+
+        // 3. Rejected Applications
+        const rejectedApps = apps.filter(a => a.status === 'rejected');
+        if (rejectedApps.length > 0) {
+            rejectedList.innerHTML = rejectedApps.map(app => `
+                <tr>
+                    <td>${app.opportunities.title}</td>
+                    <td>${app.opportunities.organizations?.organization_name || 'N/A'}</td>
+                    <td>${new Date(app.applied_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" style="color:#ef4444; border-color:#ef4444;" onclick="viewRejectedDetails('${app.id}')" data-i18n="dash.viewDetails">${t('dash.viewDetails')}</button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            rejectedList.innerHTML = `<tr><td colspan="4" class="text-center" data-i18n="dash.noRejectedApps">${t('dash.noRejectedApps')}</td></tr>`;
+        }
+
+        // Global function for detail view
+        window.viewApprovedDetails = (appId) => {
+            const app = apps.find(a => a.id === appId);
+            if (!app) return;
+            
+            const opp = app.opportunities;
+            document.getElementById('detail-category').textContent = t('dash.detailsGeneral');
+            document.getElementById('detail-event-date').textContent = new Date(opp.date).toLocaleDateString();
+            document.getElementById('detail-duration').textContent = t('dash.detailsFlexible');
+            document.getElementById('detail-location').textContent = opp.location || 'Remote';
+            document.getElementById('detail-requirements').textContent = opp.description || '-';
+            
+            document.getElementById('approved-details-modal').classList.add('open');
+        };
+
+        window.viewRejectedDetails = (appId) => {
+            const app = apps.find(a => a.id === appId);
+            if (!app) return;
+            
+            document.getElementById('rejected-reason-text').textContent = app.rejection_reason || t('dash.noReasonGiven');
+            document.getElementById('rejected-details-modal').classList.add('open');
+        };
+
     } else {
-        list.innerHTML = '<tr><td colspan="4" class="text-center">No active applications.</td></tr>';
+        const emptyRow = `<tr><td colspan="4" class="text-center" data-i18n="dash.noApps">${t('dash.noApps')}</td></tr>`;
+        list.innerHTML = emptyRow;
+        approvedList.innerHTML = `<tr><td colspan="4" class="text-center" data-i18n="dash.noApprovedApps">${t('dash.noApprovedApps')}</td></tr>`;
+        rejectedList.innerHTML = `<tr><td colspan="4" class="text-center" data-i18n="dash.noRejectedApps">${t('dash.noRejectedApps')}</td></tr>`;
     }
 }
 
@@ -95,9 +164,9 @@ async function initOrgDashboard(user, profile) {
     // Sidebar
     const nav = document.getElementById('sidebar-nav');
     nav.innerHTML = `
-        <div class="nav-item active" onclick="switchSection('org-dashboard', this)">📊 Overview</div>
-        <div class="nav-item" onclick="window.location.href='messages.html'">💬 Messages</div>
-        <div class="nav-item" onclick="switchSection('notifications-dashboard', this); loadNotifications('${user.id}')">🔔 Notifications</div>
+        <div class="nav-item active" onclick="switchSection('org-dashboard', this)" data-i18n="dash.sidebar.dashboard">${t('dash.sidebar.dashboard')}</div>
+        <div class="nav-item" onclick="window.location.href='messages.html'" data-i18n="dash.sidebar.messages">${t('dash.sidebar.messages')}</div>
+        <div class="nav-item" onclick="switchSection('notifications-dashboard', this); loadNotifications('${user.id}')" data-i18n="dash.sidebar.notifications">${t('dash.sidebar.notifications')}</div>
     `;
 
     // Check Org Profile
@@ -122,7 +191,7 @@ async function initOrgDashboard(user, profile) {
 
             if (insertError) {
                 console.error(insertError);
-                alert('Error processing profile: ' + insertError.message);
+                alert(t('dash.alert.errorProfile') + insertError.message);
             } else {
                 profileModal.classList.remove('open');
                 window.location.reload();
@@ -144,7 +213,8 @@ async function initOrgDashboard(user, profile) {
         const id = document.getElementById('post-id').value;
         const title = document.getElementById('post-title').value;
         const desc = document.getElementById('post-desc').value;
-        const date = document.getElementById('post-date').value;
+        const eventDate = document.getElementById('post-event-date').value;
+        const deadline = document.getElementById('post-deadline').value;
         const loc = document.getElementById('post-location').value;
         const slots = document.getElementById('post-slots').value;
 
@@ -154,7 +224,7 @@ async function initOrgDashboard(user, profile) {
             // Update
             const { error: updateError } = await supabase
                 .from('opportunities')
-                .update({ title, description: desc, date, location: loc, slots_available: slots })
+                .update({ title, description: desc, date: eventDate, deadline: deadline, location: loc, slots_available: slots })
                 .eq('id', id)
                 .eq('organization_id', orgData.id);
             error = updateError;
@@ -164,7 +234,8 @@ async function initOrgDashboard(user, profile) {
                 organization_id: orgData.id,
                 title,
                 description: desc,
-                date,
+                date: eventDate,
+                deadline: deadline,
                 location: loc,
                 slots_available: slots,
                 status: 'active'
@@ -173,12 +244,12 @@ async function initOrgDashboard(user, profile) {
         }
 
         if (!error) {
-            alert(id ? 'Opportunity Updated!' : 'Opportunity Posted!');
+            alert(id ? t('dash.alert.oppUpdated') : t('dash.alert.oppPosted'));
             closePostModal();
             loadOrgPosts(orgData.id);
         } else {
             console.error(error);
-            alert('Error saving opportunity: ' + error.message);
+            alert(t('dash.alert.errorSaving') + error.message);
         }
     };
 
@@ -189,8 +260,27 @@ async function initOrgDashboard(user, profile) {
 
     // Global helper for applications
     window.updateApplicationStatus = async (appId, status) => {
-        if (!confirm(`Are you sure you want to mark this application as ${status}?`)) return;
+        if (status === 'rejected') {
+            document.getElementById('reject-app-id').value = appId;
+            document.getElementById('reject-reason-input').value = '';
+            document.getElementById('reject-app-modal').classList.add('open');
+            return;
+        }
 
+        if (!confirm(`${t('dash.confirm.appStatus')} ${status}?`)) return;
+        await processAppUpdate(appId, status, null);
+    };
+
+    document.getElementById('reject-app-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const appId = document.getElementById('reject-app-id').value;
+        const reason = document.getElementById('reject-reason-input').value;
+        
+        await processAppUpdate(appId, 'rejected', reason);
+        document.getElementById('reject-app-modal').classList.remove('open');
+    };
+
+    async function processAppUpdate(appId, status, rejectionReason) {
         // Get details for notification
         const { data: appDetails, error: fetchError } = await supabase
             .from('applications')
@@ -198,21 +288,24 @@ async function initOrgDashboard(user, profile) {
             .eq('id', appId)
             .single();
 
+        let updateData = { status: status };
+        if (rejectionReason) updateData.rejection_reason = rejectionReason;
+
         const { error } = await supabase
             .from('applications')
-            .update({ status: status })
+            .update(updateData)
             .eq('id', appId);
 
         if (error) {
             console.error(error);
-            alert('Error updating status');
+            alert(t('dash.alert.errorStatus'));
         } else {
             // Send Notification
             if (appDetails && !fetchError) {
                 const { error: notifError } = await supabase.from('notifications').insert([{
                     user_id: appDetails.volunteer_id,
-                    title: 'Application Update',
-                    message: `Your application for "${appDetails.opportunities?.title || 'Opportunity'}" has been ${status}.`,
+                    title: t('dash.appUpdate.title'),
+                    message: t('dash.appUpdate.message', { title: appDetails.opportunities?.title || 'Opportunity', status: status }),
                     is_read: false
                 }]);
                 if (notifError) console.error('Notification error:', notifError);
@@ -222,15 +315,15 @@ async function initOrgDashboard(user, profile) {
             loadOrgStats(orgData.id);
             loadOrgApplications(orgData.id);
         }
-    };
+    }
 }
 
 // Helper to open modal for create
 function openPostModal() {
     document.getElementById('post-form').reset();
     document.getElementById('post-id').value = '';
-    document.getElementById('modal-title').textContent = 'Post New Opportunity';
-    document.getElementById('save-post-btn').textContent = 'Post';
+    document.getElementById('modal-title').textContent = t('dash.postModal.titleNew');
+    document.getElementById('save-post-btn').textContent = t('dash.postModal.post');
     document.getElementById('post-modal').classList.add('open');
 }
 
@@ -244,25 +337,32 @@ async function editOpportunity(id, orgId) {
         .single();
 
     if (error || !opp) {
-        alert('Error fetching details');
+        alert(t('dash.alert.errorFetch'));
         return;
     }
 
     document.getElementById('post-id').value = opp.id;
     document.getElementById('post-title').value = opp.title;
     document.getElementById('post-desc').value = opp.description;
-    document.getElementById('post-date').value = opp.date;
+    
+    // Convert timestamp to YYYY-MM-DD for date inputs
+    const evDate = opp.date ? new Date(opp.date).toISOString().split('T')[0] : '';
+    const dlDate = opp.deadline ? new Date(opp.deadline).toISOString().split('T')[0] : evDate;
+    
+    document.getElementById('post-event-date').value = evDate;
+    document.getElementById('post-deadline').value = dlDate;
+    
     document.getElementById('post-location').value = opp.location;
     document.getElementById('post-slots').value = opp.slots_available;
 
-    document.getElementById('modal-title').textContent = 'Edit Opportunity';
-    document.getElementById('save-post-btn').textContent = 'Update';
+    document.getElementById('modal-title').textContent = t('dash.postModal.titleEdit');
+    document.getElementById('save-post-btn').textContent = t('dash.postModal.update');
     document.getElementById('post-modal').classList.add('open');
 }
 
 // Helper to delete
 async function deleteOpportunity(id, orgId) {
-    if (!confirm('Are you sure you want to delete this opportunity?')) return;
+    if (!confirm(t('dash.confirm.deleteOpp'))) return;
 
     const { error } = await supabase
         .from('opportunities')
@@ -271,7 +371,7 @@ async function deleteOpportunity(id, orgId) {
         .eq('organization_id', orgId);
 
     if (error) {
-        alert('Error deleting: ' + error.message);
+        alert(t('dash.alert.errorDeleting') + error.message);
     } else {
         loadOrgPosts(orgId);
     }
@@ -309,15 +409,12 @@ async function loadOrgApplications(orgId) {
     const list = document.getElementById('org-applications-list');
 
     if (!opps || opps.length === 0) {
-        list.innerHTML = '<tr><td colspan="4" class="text-center">No active opportunities.</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center">${t('dash.noActiveOpps')}</td></tr>`;
         return;
     }
 
     const oppIds = opps.map(o => o.id);
 
-    // 2. Fetch Pending Applications
-    // We need user details (volunteer) so we join 'users'
-    // We need opp details so we join 'opportunities'
     const { data: apps, error } = await supabase
         .from('applications')
         .select(`
@@ -335,7 +432,7 @@ async function loadOrgApplications(orgId) {
 
     if (error) {
         console.error('Error fetching apps:', error);
-        list.innerHTML = '<tr><td colspan="4" class="text-center">Error loading applications.</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center">${t('opps.error')}</td></tr>`;
         return;
     }
 
@@ -350,15 +447,15 @@ async function loadOrgApplications(orgId) {
                 <td>${new Date(app.applied_at).toLocaleDateString()}</td>
                 <td>
                     <div style="display:flex; gap:0.5rem;">
-                        <button class="btn btn-sm btn-secondary" style="color:#4ade80; border-color: rgba(74, 222, 128, 0.5);" onclick="updateApplicationStatus('${app.id}', 'approved')">Approve</button>
-                        <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="updateApplicationStatus('${app.id}', 'rejected')">Reject</button>
-                        <a href="messages.html?recipient_id=${app.volunteer_id}&name=${encodeURIComponent(app.users?.full_name || 'Volunteer')}" class="btn btn-sm btn-secondary">Message</a>
+                        <button class="btn btn-sm btn-secondary" style="color:#4ade80; border-color: rgba(74, 222, 128, 0.5);" onclick="updateApplicationStatus('${app.id}', 'approved')">${t('dash.approve')}</button>
+                        <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="updateApplicationStatus('${app.id}', 'rejected')">${t('dash.reject')}</button>
+                        <a href="messages.html?recipient_id=${app.volunteer_id}&name=${encodeURIComponent(app.users?.full_name || 'Volunteer')}" class="btn btn-sm btn-secondary">${t('dash.message')}</a>
                     </div>
                 </td>
             </tr>
         `).join('');
     } else {
-        list.innerHTML = '<tr><td colspan="4" class="text-center">No pending applications.</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center">${t('dash.noPendingApps')}</td></tr>`;
     }
 }
 
@@ -379,13 +476,13 @@ async function loadOrgPosts(orgId) {
                 <td>${new Date(post.date).toLocaleDateString()}</td>
                 <td><span class="status-badge status-${post.status}">${post.status}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" onclick="editOpportunity('${post.id}')">Edit</button>
-                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="deleteOpportunity('${post.id}')">Delete</button>
+                    <button class="btn btn-sm btn-secondary" onclick="editOpportunity('${post.id}')">${t('dash.edit')}</button>
+                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="deleteOpportunity('${post.id}')">${t('dash.delete')}</button>
                 </td>
             </tr>
         `).join('');
     } else {
-        list.innerHTML = '<tr><td colspan="4" class="text-center">No opportunities posted yet.</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center">${t('dash.noOpps')}</td></tr>`;
     }
 }
 
@@ -405,7 +502,7 @@ window.switchSection = function (sectionId, element) {
 // Load Notifications
 window.loadNotifications = async function (userId) {
     const list = document.getElementById('notifications-list');
-    list.innerHTML = '<div class="text-center" style="color: var(--text-muted); padding: 2rem;">Loading...</div>';
+    list.innerHTML = `<div class="text-center" style="color: var(--text-muted); padding: 2rem;">${t('msg.loading')}</div>`;
 
     const { data: notifs, error } = await supabase
         .from('notifications')
@@ -415,12 +512,12 @@ window.loadNotifications = async function (userId) {
 
     if (error) {
         console.error('Error loading notifications:', error);
-        list.innerHTML = '<div class="text-center" style="color: #ef4444; padding: 2rem;">Error loading notifications.</div>';
+        list.innerHTML = `<div class="text-center" style="color: #ef4444; padding: 2rem;">${t('opps.error')}</div>`;
         return;
     }
 
     if (!notifs || notifs.length === 0) {
-        list.innerHTML = '<div class="text-center" style="color: var(--text-muted); padding: 2rem;">No new notifications.</div>';
+        list.innerHTML = `<div class="text-center" style="color: var(--text-muted); padding: 2rem;">${t('dash.noNotifications')}</div>`;
         return;
     }
 
@@ -442,10 +539,10 @@ async function initAdminDashboard(user, profile) {
     // Sidebar
     const nav = document.getElementById('sidebar-nav');
     nav.innerHTML = `
-        <div class="nav-item active" onclick="switchSection('admin-dashboard', this)">📊 Admin Overview</div>
-        <div class="nav-item" onclick="window.location.href='organizations.html'">🏢 All Organizations</div>
-        <div class="nav-item" onclick="window.location.href='messages.html'">💬 Messages</div>
-        <div class="nav-item" onclick="switchSection('notifications-dashboard', this); loadNotifications('${user.id}')">🔔 Notifications</div>
+        <div class="nav-item active" onclick="switchSection('admin-dashboard', this)" data-i18n="dash.sidebar.adminOverview">${t('dash.sidebar.adminOverview')}</div>
+        <div class="nav-item" onclick="window.location.href='organizations.html'" data-i18n="dash.sidebar.allOrgs">${t('dash.sidebar.allOrgs')}</div>
+        <div class="nav-item" onclick="window.location.href='messages.html'" data-i18n="dash.sidebar.messages">${t('dash.sidebar.messages')}</div>
+        <div class="nav-item" onclick="switchSection('notifications-dashboard', this); loadNotifications('${user.id}')" data-i18n="dash.sidebar.notifications">${t('dash.sidebar.notifications')}</div>
     `;
 
     // 1. Load Stats
@@ -465,7 +562,7 @@ async function initAdminDashboard(user, profile) {
 
     // Global helpers for Admin
     window.updateOrgStatus = async (orgId, status) => {
-        if (!confirm(`Are you sure you want to mark this organization as ${status}?`)) return;
+        if (!confirm(`${t('dash.confirm.appStatus')} ${status}?`)) return;
 
         const { error } = await supabase
             .from('organizations')
@@ -474,7 +571,7 @@ async function initAdminDashboard(user, profile) {
 
         if (error) {
             console.error('Error updating org status:', error);
-            alert('Failed to update status.');
+            alert(t('dash.alert.errorStatus'));
         } else {
             // Refresh
             loadPendingOrgs();
@@ -484,11 +581,11 @@ async function initAdminDashboard(user, profile) {
     };
 
     window.adminDeleteUser = async (userId) => {
-        if (!confirm('Are you sure you want to delete this user? This will remove all their data.')) return;
+        if (!confirm(t('dash.confirm.deleteUser'))) return;
         const { error } = await supabase.from('users').delete().eq('id', userId);
         if (error) {
             console.error(error);
-            alert('Error deleting user: ' + error.message);
+            alert(t('dash.alert.errorDeleting') + error.message);
         } else {
             loadRecentUsers();
             loadAdminStats();
@@ -496,11 +593,11 @@ async function initAdminDashboard(user, profile) {
     };
 
     window.adminDeleteOrg = async (orgId) => {
-        if (!confirm('Are you sure you want to delete this organization?')) return;
+        if (!confirm(t('dash.confirm.deleteOrg'))) return;
         const { error } = await supabase.from('organizations').delete().eq('id', orgId);
         if (error) {
             console.error(error);
-            alert('Error deleting organization: ' + error.message);
+            alert(t('dash.alert.errorDeleting') + error.message);
         } else {
             loadAllOrgs();
             loadPendingOrgs();
@@ -509,11 +606,11 @@ async function initAdminDashboard(user, profile) {
     };
 
     window.adminDeleteOpp = async (oppId) => {
-        if (!confirm('Are you sure you want to delete this opportunity?')) return;
+        if (!confirm(t('dash.confirm.deleteOppAdmin'))) return;
         const { error } = await supabase.from('opportunities').delete().eq('id', oppId);
         if (error) {
             console.error(error);
-            alert('Error deleting opportunity: ' + error.message);
+            alert(t('dash.alert.errorDeleting') + error.message);
         } else {
             loadAdminOpps();
             loadAdminStats();
@@ -537,7 +634,7 @@ async function loadAdminStats() {
 
 async function loadPendingOrgs() {
     const list = document.getElementById('admin-pending-orgs-list');
-    list.innerHTML = '<tr><td colspan="4" class="text-center">Loading...</td></tr>';
+    list.innerHTML = `<tr><td colspan="4" class="text-center">${t('msg.loading')}</td></tr>`;
 
     const { data: orgs, error } = await supabase
         .from('organizations')
@@ -547,12 +644,12 @@ async function loadPendingOrgs() {
 
     if (error) {
         console.error(error);
-        list.innerHTML = '<tr><td colspan="4" class="text-center" style="color:var(--danger)">Error loading data</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center" style="color:var(--danger)">${t('opps.error')}</td></tr>`;
         return;
     }
 
     if (!orgs || orgs.length === 0) {
-        list.innerHTML = '<tr><td colspan="4" class="text-center">No pending approvals.</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center">${t('dash.noPendingApps')}</td></tr>`;
         return;
     }
 
@@ -560,16 +657,16 @@ async function loadPendingOrgs() {
         <tr>
             <td>
                 <div style="font-weight:600">${org.organization_name}</div>
-                <div style="font-size:0.8rem; color:var(--text-muted)">${org.address || 'No address'}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted)">${org.address || t('dash.noAddress')}</div>
             </td>
             <td>
                 <div>${org.contact_email || 'N/A'}</div>
                 <div style="font-size:0.8rem">${org.contact_phone || ''}</div>
             </td>
-            <td><span class="status-badge status-pending">Pending</span></td>
+            <td><span class="status-badge status-pending">${t('status.pending')}</span></td>
             <td>
-                <button class="btn btn-sm btn-secondary" style="color:#4ade80; border-color: rgba(74, 222, 128, 0.5); margin-right:0.5rem;" onclick="updateOrgStatus('${org.id}', 'approved')">Approve</button>
-                <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="updateOrgStatus('${org.id}', 'rejected')">Reject</button>
+                <button class="btn btn-sm btn-secondary" style="color:#4ade80; border-color: rgba(74, 222, 128, 0.5); margin-right:0.5rem;" onclick="updateOrgStatus('${org.id}', 'approved')">${t('dash.approve')}</button>
+                <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="updateOrgStatus('${org.id}', 'rejected')">${t('dash.reject')}</button>
             </td>
         </tr>
     `).join('');
@@ -591,15 +688,15 @@ async function loadAllOrgs() {
                 <td><span class="status-badge status-${org.status}">${org.status}</span></td>
                 <td>${new Date(org.created_at).toLocaleDateString()}</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="adminDeleteOrg('${org.id}')">Delete</button>
+                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="adminDeleteOrg('${org.id}')">${t('dash.delete')}</button>
                     ${org.status === 'pending' ?
-                `<button class="btn btn-sm btn-secondary" onclick="updateOrgStatus('${org.id}', 'approved')" style="margin-left:0.5rem">Approve</button>` : ''
+                `<button class="btn btn-sm btn-secondary" onclick="updateOrgStatus('${org.id}', 'approved')" style="margin-left:0.5rem">${t('dash.approve')}</button>` : ''
             }
                 </td>
             </tr>
         `).join('');
     } else {
-        list.innerHTML = '<tr><td colspan="4" class="text-center">No organizations found.</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center">${t('orgs.noResults')}</td></tr>`;
     }
 }
 
@@ -620,12 +717,12 @@ async function loadRecentUsers() {
                 <td>${u.email}</td>
                 <td>${new Date(u.created_at).toLocaleDateString()}</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="adminDeleteUser('${u.id}')">Delete</button>
+                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="adminDeleteUser('${u.id}')">${t('dash.delete')}</button>
                 </td>
             </tr>
         `).join('');
     } else {
-        list.innerHTML = '<tr><td colspan="5" class="text-center">No users found.</td></tr>';
+        list.innerHTML = `<tr><td colspan="5" class="text-center">${t('dash.noApps')}</td></tr>`;
     }
 }
 
@@ -646,11 +743,11 @@ async function loadAdminOpps() {
                 <td>${opp.organizations?.organization_name || 'N/A'}</td>
                 <td>${new Date(opp.date).toLocaleDateString()}</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="adminDeleteOpp('${opp.id}')">Delete</button>
+                    <button class="btn btn-sm btn-secondary" style="color:#ef4444; border-color: rgba(239, 68, 68, 0.5);" onclick="adminDeleteOpp('${opp.id}')">${t('dash.delete')}</button>
                 </td>
             </tr>
         `).join('');
     } else {
-        list.innerHTML = '<tr><td colspan="4" class="text-center">No active opportunities.</td></tr>';
+        list.innerHTML = `<tr><td colspan="4" class="text-center">${t('dash.noActiveOpps')}</td></tr>`;
     }
 }

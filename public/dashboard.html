@@ -231,12 +231,17 @@
                 </div>
             </div>
 
+            <div style="padding: 0.5rem 1rem;">
+                <button class="lang-switch-btn" style="width:100%; justify-content:center;"
+                    onclick="window.__toggleLang && window.__toggleLang()">🇸🇦 العربية</button>
+            </div>
+
             <nav id="sidebar-nav">
                 <!-- Injected via JS based on role -->
             </nav>
 
-            <div class="nav-item nav-item-logout" id="logout-btn">
-                <span>🚪</span> Sign Out
+            <div class="nav-item nav-item-logout" id="logout-btn" data-i18n="dash.signOut">
+                🚪 Sign Out
             </div>
         </aside>
 
@@ -246,33 +251,69 @@
             <div id="volunteer-dashboard" class="dashboard-section">
                 <header
                     style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-                    <h2>Welcome back, <span class="highlight" id="vol-name">User</span>!</h2>
-                    <a href="opportunities.html" class="btn btn-primary">Browse Opportunities</a>
+                    <h2><span data-i18n="dash.welcomeBack">Welcome back,</span> <span class="highlight"
+                            id="vol-name">User</span>!</h2>
+                    <a href="opportunities.html" class="btn btn-primary" data-i18n="dash.browseOpps">Browse
+                        Opportunities</a>
                 </header>
 
                 <div class="stats-grid">
                     <div class="stat-card glass-card">
                         <span class="stat-value" id="vol-hours">0</span>
-                        <span class="stat-label">Hours Contributed</span>
+                        <span class="stat-label" data-i18n="dash.hoursContributed">Hours Contributed</span>
                     </div>
                     <div class="stat-card glass-card">
                         <span class="stat-value" id="vol-applications">0</span>
-                        <span class="stat-label">Active Applications</span>
+                        <span class="stat-label" data-i18n="dash.activeApps">Active Applications</span>
                     </div>
                 </div>
 
-                <div class="glass-card">
-                    <h3>My Applications</h3>
+                <div class="glass-card" style="margin-bottom: 2rem;">
+                    <h3 data-i18n="dash.myApps">All Applications</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Opportunity</th>
-                                <th>Organization</th>
-                                <th>Date Applied</th>
-                                <th>Status</th>
+                                <th data-i18n="dash.thOpportunity">Opportunity</th>
+                                <th data-i18n="dash.thOrganization">Organization</th>
+                                <th data-i18n="dash.thDateApplied">Date Applied</th>
+                                <th data-i18n="dash.thStatus">Status</th>
                             </tr>
                         </thead>
                         <tbody id="applications-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="glass-card" style="margin-bottom: 2rem;">
+                    <h3 data-i18n="dash.approvedApps">Approved Applications</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="dash.thOpportunity">Opportunity</th>
+                                <th data-i18n="dash.thOrganization">Organization</th>
+                                <th data-i18n="dash.thDateApplied">Date Applied</th>
+                                <th data-i18n="dash.thActions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approved-apps-list">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="glass-card">
+                    <h3 data-i18n="dash.rejectedApps">Rejected Applications</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="dash.thOpportunity">Opportunity</th>
+                                <th data-i18n="dash.thOrganization">Organization</th>
+                                <th data-i18n="dash.thDateApplied">Date Applied</th>
+                                <th data-i18n="dash.thStatus">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rejected-apps-list">
                             <!-- Populated via JS -->
                         </tbody>
                     </table>
@@ -283,30 +324,31 @@
             <div id="org-dashboard" class="dashboard-section">
                 <header
                     style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-                    <h2>Organization Dashboard</h2>
-                    <button class="btn btn-primary" id="create-post-btn">+ Post Opportunity</button>
+                    <h2 data-i18n="dash.orgDashboard">Organization Dashboard</h2>
+                    <button class="btn btn-primary" id="create-post-btn" data-i18n="dash.postOpp">+ Post
+                        Opportunity</button>
                 </header>
 
                 <div class="stats-grid">
                     <div class="stat-card glass-card">
                         <span class="stat-value" id="org-active-posts">0</span>
-                        <span class="stat-label">Active Listings</span>
+                        <span class="stat-label" data-i18n="dash.activeListings">Active Listings</span>
                     </div>
                     <div class="stat-card glass-card">
                         <span class="stat-value" id="org-pending-apps">0</span>
-                        <span class="stat-label">Pending Applications</span>
+                        <span class="stat-label" data-i18n="dash.pendingApps">Pending Applications</span>
                     </div>
                 </div>
 
                 <div class="glass-card" style="margin-bottom: 2rem;">
-                    <h3>Manage Opportunities</h3>
+                    <h3 data-i18n="dash.manageOpps">Manage Opportunities</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Title</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th data-i18n="dash.thTitle">Title</th>
+                                <th data-i18n="dash.thDate">Date</th>
+                                <th data-i18n="dash.thStatus">Status</th>
+                                <th data-i18n="dash.thActions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="org-posts-list">
@@ -316,14 +358,14 @@
                 </div>
 
                 <div class="glass-card">
-                    <h3>Incoming Applications</h3>
+                    <h3 data-i18n="dash.incomingApps">Incoming Applications</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Applicant</th>
-                                <th>Opportunity</th>
-                                <th>Date</th>
-                                <th>Actions</th>
+                                <th data-i18n="dash.thApplicant">Applicant</th>
+                                <th data-i18n="dash.thOpportunity">Opportunity</th>
+                                <th data-i18n="dash.thDate">Date</th>
+                                <th data-i18n="dash.thActions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="org-applications-list">
@@ -336,38 +378,36 @@
             <!-- Admin Dashboard -->
             <div id="admin-dashboard" class="dashboard-section">
                 <header style="margin-bottom: 2rem;">
-                    <h2>Admin Dashboard</h2>
+                    <h2 data-i18n="dash.adminDashboard">Admin Dashboard</h2>
                 </header>
 
                 <div class="stats-grid">
                     <div class="stat-card glass-card">
                         <span class="stat-value" id="admin-total-users">0</span>
-                        <span class="stat-label">Total Users</span>
+                        <span class="stat-label" data-i18n="dash.totalUsers">Total Users</span>
                     </div>
                     <div class="stat-card glass-card">
                         <span class="stat-value" id="admin-total-orgs">0</span>
-                        <span class="stat-label">Organizations</span>
+                        <span class="stat-label" data-i18n="dash.organizations">Organizations</span>
                     </div>
                     <div class="stat-card glass-card">
                         <span class="stat-value" id="admin-active-opps">0</span>
-                        <span class="stat-label">Active Opportunities</span>
+                        <span class="stat-label" data-i18n="dash.activeOpps">Active Opportunities</span>
                     </div>
                 </div>
 
                 <!-- Pending Organizations -->
                 <div class="glass-card" style="margin-bottom: 2rem;">
-                    <h3>Pending Organization Approvals</h3>
+                    <h3 data-i18n="dash.pendingOrgApprovals">Pending Organization Approvals</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <thead>
-                                    <tr>
-                                        <th>Organization Name</th>
-                                        <th>Contact</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
+                                <th data-i18n="dash.thOrgName">Organization Name</th>
+                                <th data-i18n="dash.thContact">Contact</th>
+                                <th data-i18n="dash.thStatus">Status</th>
+                                <th data-i18n="dash.thActions">Actions</th>
+                            </tr>
+                        </thead>
                         <tbody id="admin-pending-orgs-list">
                             <!-- Populated via JS -->
                         </tbody>
@@ -376,14 +416,14 @@
 
                 <!-- All Organizations -->
                 <div class="glass-card" style="margin-bottom: 2rem;">
-                    <h3>All Organizations</h3>
+                    <h3 data-i18n="dash.allOrgs">All Organizations</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                                <th>Actions</th>
+                                <th data-i18n="dash.thName">Name</th>
+                                <th data-i18n="dash.thStatus">Status</th>
+                                <th data-i18n="dash.thJoined">Joined</th>
+                                <th data-i18n="dash.thActions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="admin-all-orgs-list">
@@ -394,15 +434,15 @@
 
                 <!-- Recent Users -->
                 <div class="glass-card" style="margin-bottom: 2rem;">
-                    <h3>Manage Users</h3>
+                    <h3 data-i18n="dash.manageUsers">Manage Users</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Role</th>
-                                <th>Email</th>
-                                <th>Joined</th>
-                                <th>Actions</th>
+                                <th data-i18n="dash.thName">Name</th>
+                                <th data-i18n="dash.thRole">Role</th>
+                                <th data-i18n="dash.thEmail">Email</th>
+                                <th data-i18n="dash.thJoined">Joined</th>
+                                <th data-i18n="dash.thActions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="admin-users-list">
@@ -413,14 +453,14 @@
 
                 <!-- Manage Opportunities -->
                 <div class="glass-card">
-                    <h3>Manage Opportunities</h3>
+                    <h3 data-i18n="dash.manageOpps">Manage Opportunities</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Title</th>
-                                <th>Organization</th>
-                                <th>Date</th>
-                                <th>Actions</th>
+                                <th data-i18n="dash.thTitle">Title</th>
+                                <th data-i18n="dash.thOrganization">Organization</th>
+                                <th data-i18n="dash.thDate">Date</th>
+                                <th data-i18n="dash.thActions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="admin-opps-list">
@@ -433,12 +473,13 @@
             <!-- Notifications Dashboard -->
             <div id="notifications-dashboard" class="dashboard-section">
                 <header style="margin-bottom: 2rem;">
-                    <h2>Notifications</h2>
+                    <h2 data-i18n="dash.notifications">Notifications</h2>
                 </header>
                 <div class="glass-card">
                     <div id="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
                         <!-- Populated via JS -->
-                        <div class="text-center" style="color: var(--text-muted); padding: 2rem;">Loading
+                        <div class="text-center" style="color: var(--text-muted); padding: 2rem;"
+                            data-i18n="dash.loadingNotifications">Loading
                             notifications...</div>
                     </div>
                 </div>
@@ -449,34 +490,41 @@
     <!-- Create/Edit Opportunity Modal -->
     <div class="modal" id="post-modal">
         <div class="modal-content">
-            <h2 style="margin-bottom: 1.5rem;" id="modal-title">Post New Opportunity</h2>
+            <h2 style="margin-bottom: 1.5rem;" id="modal-title" data-i18n="dash.postModal.titleNew">Post New Opportunity
+            </h2>
             <form id="post-form">
                 <input type="hidden" id="post-id">
                 <div class="form-group">
-                    <label>Title</label>
+                    <label data-i18n="dash.postModal.title">Title</label>
                     <input type="text" id="post-title" required>
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
+                    <label data-i18n="dash.postModal.desc">Description</label>
                     <textarea id="post-desc" rows="4" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" id="post-date" required>
+                    <label data-i18n="dash.postModal.eventDate">Event Date</label>
+                    <input type="date" id="post-event-date" required>
                 </div>
                 <div class="form-group">
-                    <label>Location</label>
+                    <label data-i18n="dash.postModal.deadline">Apply Deadline</label>
+                    <input type="date" id="post-deadline" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="dash.postModal.location">Location</label>
                     <input type="text" id="post-location" required>
                 </div>
                 <!-- Slots -->
                 <div class="form-group">
-                    <label>Slots Available</label>
+                    <label data-i18n="dash.postModal.slots">Slots Available</label>
                     <input type="number" id="post-slots" value="5" required>
                 </div>
 
                 <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="save-post-btn">Post</button>
+                    <button type="button" class="btn btn-secondary" onclick="closePostModal()"
+                        data-i18n="dash.postModal.cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-post-btn"
+                        data-i18n="dash.postModal.post">Post</button>
                 </div>
             </form>
         </div>
@@ -485,19 +533,111 @@
     <!-- Org Profile Completion Modal -->
     <div class="modal" id="org-profile-modal">
         <div class="modal-content">
-            <h2 style="margin-bottom: 1.5rem;">Complete Organization Profile</h2>
-            <p style="margin-bottom: 1rem; color: var(--text-muted);">Please provide details about your organization to
+            <h2 style="margin-bottom: 1.5rem;" data-i18n="dash.orgProfile.title">Complete Organization Profile</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);" data-i18n="dash.orgProfile.desc">Please provide
+                details about your organization to
                 start posting opportunities.</p>
             <form id="org-profile-form">
                 <div class="form-group">
-                    <label>Organization Name</label>
+                    <label data-i18n="dash.orgProfile.name">Organization Name</label>
                     <input type="text" id="org-name-init" required>
                 </div>
                 <div class="form-group">
-                    <label>Contact Email</label>
+                    <label data-i18n="dash.orgProfile.email">Contact Email</label>
                     <input type="email" id="org-email-init" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Save & Continue</button>
+                <button type="submit" class="btn btn-primary w-100" data-i18n="dash.orgProfile.save">Save &
+                    Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { toggleLanguage } from './js/i18n.js';
+        window.__toggleLang = toggleLanguage;
+    </script>
+    <!-- Approved Details Modal -->
+    <div class="modal" id="approved-details-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" data-i18n="dash.detailsTitle">Application Details</h2>
+            <div id="approved-details-content" style="margin-top: 1.5rem;">
+                <div style="margin-bottom: 1.25rem;">
+                    <label
+                        style="font-weight:700; color:var(--primary); font-size:0.8rem; text-transform:uppercase; display:block; margin-bottom:0.4rem;"
+                        data-i18n="dash.detailsCategory">Class/Category</label>
+                    <div id="detail-category" style="font-size:1.1rem; font-weight:600;">-</div>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                    <label
+                        style="font-weight:700; color:var(--primary); font-size:0.8rem; text-transform:uppercase; display:block; margin-bottom:0.4rem;"
+                        data-i18n="dash.detailsEventDate">Event Date</label>
+                    <div id="detail-event-date" style="font-size:1.1rem; font-weight:600; color:#2563eb;">-</div>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                    <label
+                        style="font-weight:700; color:var(--primary); font-size:0.8rem; text-transform:uppercase; display:block; margin-bottom:0.4rem;"
+                        data-i18n="dash.detailsDuration">Duration</label>
+                    <div id="detail-duration" style="font-size:1.1rem; font-weight:600;">-</div>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                    <label
+                        style="font-weight:700; color:var(--primary); font-size:0.8rem; text-transform:uppercase; display:block; margin-bottom:0.4rem;"
+                        data-i18n="dash.detailsLocation">Location</label>
+                    <div id="detail-location" style="font-size:1.1rem; font-weight:600;">-</div>
+                </div>
+                <div style="margin-bottom: 1.25rem;">
+                    <label
+                        style="font-weight:700; color:var(--primary); font-size:0.8rem; text-transform:uppercase; display:block; margin-bottom:0.4rem;"
+                        data-i18n="dash.detailsRequirements">Specific Requirements</label>
+                    <div id="detail-requirements" style="line-height:1.6; color:var(--text-muted);">-</div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:2rem;">
+                <button type="button" class="btn btn-primary"
+                    onclick="document.getElementById('approved-details-modal').classList.remove('open')"
+                    data-i18n="modal.cancel">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Details Modal -->
+    <div class="modal" id="rejected-details-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" data-i18n="dash.detailsTitle">Application Details</h2>
+            <div id="rejected-details-content" style="margin-top: 1.5rem;">
+                <div style="margin-bottom: 1.25rem;">
+                    <label
+                        style="font-weight:700; color:#ef4444; font-size:0.8rem; text-transform:uppercase; display:block; margin-bottom:0.4rem;"
+                        data-i18n="dash.rejectionReason">Rejection Reason</label>
+                    <div id="rejected-reason-text" style="font-size:1rem; color:var(--text-muted); line-height:1.6; background:var(--bg-soft); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+                        -
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:2rem;">
+                <button type="button" class="btn btn-primary"
+                    onclick="document.getElementById('rejected-details-modal').classList.remove('open')"
+                    data-i18n="modal.cancel">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Application Modal -->
+    <div class="modal" id="reject-app-modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;" data-i18n="dash.rejectionReason">Rejection Reason</h2>
+            <form id="reject-app-form">
+                <input type="hidden" id="reject-app-id">
+                <div class="form-group">
+                    <label data-i18n="dash.rejectionReason">Rejection Reason</label>
+                    <textarea id="reject-reason-input" rows="4" placeholder="Please explain why this application was rejected..." required></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('reject-app-modal').classList.remove('open')"
+                        data-i18n="modal.cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="background:#ef4444; border-color:#ef4444;"
+                        data-i18n="dash.submitRejection">Confirm Rejection</button>
+                </div>
             </form>
         </div>
     </div>

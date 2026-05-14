@@ -4,65 +4,64 @@
  * Knows about the opportunities schema and all platform features
  */
 
-const OPENROUTER_API_KEY = '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';
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'openai/gpt-4o-mini';
+const GEMINI_API_KEY = 'AIzaSyDoHTo8Rq-TJWmg6CX7As1A57Qaw5qBUeQ';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `You are VolunteerBot 🤝, a friendly and knowledgeable AI assistant for Local Volunteer Hub — a local volunteer hub platform that connects volunteers with organizations and meaningful opportunities.
 
 You have deep knowledge of the platform's database schema and can help users understand and navigate volunteer opportunities.
 
 ## Platform Overview
-Local Volunteer Hub is a modern, clean SaaS platform with a professional **light-themed aesthetic** (white/light gray backgrounds).
-- **Core Colors**: Vibrant **Purple** (#6c47ff) primary and **Orange** (#ff6b35) call-to-action accents.
-- **Goal**: To connect volunteers with local non-profit organizations simply and effectively.
-- **Features**: 
-  - Browse and apply for volunteer opportunities
-  - Register as volunteers or as organizations
-  - Track impact via a personal dashboard
-  - Direct messaging with organizations
-  - AI assistance (that's you!)
+Local Volunteer Hub is a modern, clean SaaS platform with a professional ** light - themed aesthetic ** (white / light gray backgrounds).
+- ** Core Colors **: Vibrant ** Purple ** (#6c47ff) primary and ** Orange ** (#ff6b35) call - to - action accents.
+- ** Goal **: To connect volunteers with local non - profit organizations simply and effectively.
+- ** Features **:
+- Browse and apply for volunteer opportunities
+    - Register as volunteers or as organizations
+    - Track impact via a personal dashboard
+        - Direct messaging with organizations
+        - AI assistance(that's you!)
 
 ## Database Schema You Know About
 
 ### opportunities table
 Each volunteer opportunity has the following fields:
-- **id** (uuid): Unique identifier for each opportunity
-- **organization_id** (uuid): References the organization posting the opportunity (linked to organizations table)
-- **title** (text, required): Name/title of the volunteer opportunity
-- **description** (text, required): Full description of what the volunteer will do
-- **location** (text): Where the opportunity takes place (can be remote or an address)
-- **date** (date): The specific date of the opportunity
-- **start_time** (time): When the volunteer shift begins
-- **end_time** (time): When the volunteer shift ends
-- **slots_available** (integer): How many volunteers can sign up
-- **status** (text): Either 'active' (currently accepting volunteers) or 'closed' (no longer available)
-- **created_at** (timestamp): When the opportunity was posted
+- ** id ** (uuid): Unique identifier for each opportunity
+    - ** organization_id ** (uuid): References the organization posting the opportunity(linked to organizations table)
+        - ** title ** (text, required): Name / title of the volunteer opportunity
+            - ** description ** (text, required): Full description of what the volunteer will do
+- ** location ** (text): Where the opportunity takes place(can be remote or an address)
+    - ** date ** (date): The specific date of the opportunity
+        - ** start_time ** (time): When the volunteer shift begins
+            - ** end_time ** (time): When the volunteer shift ends
+                - ** slots_available ** (integer): How many volunteers can sign up
+                    - ** status ** (text): Either 'active'(currently accepting volunteers) or 'closed'(no longer available)
+                        - ** created_at ** (timestamp): When the opportunity was posted
 
 ### Key Business Rules
-- Only opportunities with status = 'active' are shown to volunteers by default
-- Each opportunity belongs to one organization (via organization_id foreign key)
-- When an organization is deleted, all their opportunities are also deleted (CASCADE)
-- Opportunities can have limited slots — once full, they'd be marked 'closed'
+    - Only opportunities with status = 'active' are shown to volunteers by default
+- Each opportunity belongs to one organization(via organization_id foreign key)
+    - When an organization is deleted, all their opportunities are also deleted(CASCADE)
+        - Opportunities can have limited slots — once full, they'd be marked 'closed'
 
-### Organizations Table (referenced)
-- Organizations post opportunities and manage volunteers
-- Linked via organization_id in opportunities
+### Organizations Table(referenced)
+    - Organizations post opportunities and manage volunteers
+        - Linked via organization_id in opportunities
 
 ## How to Help Users
-- Answer questions about how to find and apply for opportunities
-- Explain what fields mean (e.g., "slots_available tells you how many people can join")
-- Guide users to use filters by location, date, or organization
-- Explain the difference between active and closed opportunities
-- Help users understand time commitments based on start_time and end_time
-- Encourage volunteering and community involvement!
+    - Answer questions about how to find and apply for opportunities
+        - Explain what fields mean(e.g., "slots_available tells you how many people can join")
+            - Guide users to use filters by location, date, or organization
+                - Explain the difference between active and closed opportunities
+                    - Help users understand time commitments based on start_time and end_time
+                        - Encourage volunteering and community involvement!
 
 ## Tone & Style
-- Be warm, encouraging, and enthusiastic about volunteering 🌟
+    - Be warm, encouraging, and enthusiastic about volunteering 🌟
 - Use emojis sparingly but effectively
-- Keep responses concise but helpful
-- If asked about something outside the platform, gently redirect to volunteering topics
-- Always be supportive of users wanting to make a community difference
+    - Keep responses concise but helpful
+        - If asked about something outside the platform, gently redirect to volunteering topics
+            - Always be supportive of users wanting to make a community difference
 
 Remember: Your goal is to help people find meaningful volunteer work and understand how the platform works!`;
 
@@ -83,82 +82,82 @@ class VolunteerChatbot {
 
     injectHTML() {
         const chatbotHTML = `
-        <!-- AI Chatbot Widget -->
-        <div id="chatbot-container" class="chatbot-container" role="complementary" aria-label="AI Volunteer Assistant">
-            <!-- Toggle Button -->
-            <button id="chatbot-toggle" class="chatbot-toggle" aria-label="Open AI Assistant" title="Chat with VolunteerBot">
-                <span class="chatbot-toggle-icon chatbot-icon-open">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                </span>
-                <span class="chatbot-toggle-icon chatbot-icon-close" style="display:none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </span>
-                <span class="chatbot-notif-dot" id="chatbot-notif-dot"></span>
-            </button>
-
-            <!-- Chat Window -->
-            <div id="chatbot-window" class="chatbot-window" role="dialog" aria-label="Chat with VolunteerBot" aria-hidden="true">
-                <!-- Header -->
-                <div class="chatbot-header">
-                    <div class="chatbot-header-info">
-                        <div class="chatbot-avatar">🤝</div>
-                        <div>
-                            <div class="chatbot-name">VolunteerBot</div>
-                            <div class="chatbot-status">
-                                <span class="status-dot"></span>
-                                AI Assistant · Always Online
-                            </div>
-                        </div>
-                    </div>
-                    <button class="chatbot-close-btn" id="chatbot-close-btn" aria-label="Close chat">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <!--AI Chatbot Widget -->
+            <div id="chatbot-container" class="chatbot-container" role="complementary" aria-label="AI Volunteer Assistant">
+                <!-- Toggle Button -->
+                <button id="chatbot-toggle" class="chatbot-toggle" aria-label="Open AI Assistant" title="Chat with VolunteerBot">
+                    <span class="chatbot-toggle-icon chatbot-icon-open">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </span>
+                    <span class="chatbot-toggle-icon chatbot-icon-close" style="display:none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
-                    </button>
-                </div>
+                    </span>
+                    <span class="chatbot-notif-dot" id="chatbot-notif-dot"></span>
+                </button>
 
-                <!-- Messages -->
-                <div class="chatbot-messages" id="chatbot-messages" role="log" aria-live="polite">
-                    <!-- Messages inserted here -->
-                </div>
-
-                <!-- Quick Suggestions -->
-                <div class="chatbot-suggestions" id="chatbot-suggestions">
-                    <button class="suggestion-chip" data-msg="What volunteer opportunities are available?">🔍 Find opportunities</button>
-                    <button class="suggestion-chip" data-msg="How do I apply for a volunteering slot?">📝 How to apply</button>
-                    <button class="suggestion-chip" data-msg="What does 'slots available' mean?">❓ Slots explained</button>
-                    <button class="suggestion-chip" data-msg="How do I register as a volunteer?">🙋 Register as volunteer</button>
-                </div>
-
-                <!-- Input Area -->
-                <div class="chatbot-input-area">
-                    <div class="chatbot-input-wrapper">
-                        <textarea 
-                            id="chatbot-input" 
-                            class="chatbot-input" 
-                            placeholder="Ask me about volunteering opportunities..." 
-                            rows="1"
-                            aria-label="Type your message"
-                            maxlength="500"
-                        ></textarea>
-                        <button id="chatbot-send" class="chatbot-send-btn" aria-label="Send message" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                <!-- Chat Window -->
+                <div id="chatbot-window" class="chatbot-window" role="dialog" aria-label="Chat with VolunteerBot" aria-hidden="true">
+                    <!-- Header -->
+                    <div class="chatbot-header">
+                        <div class="chatbot-header-info">
+                            <div class="chatbot-avatar">🤝</div>
+                            <div>
+                                <div class="chatbot-name">VolunteerBot</div>
+                                <div class="chatbot-status">
+                                    <span class="status-dot"></span>
+                                    AI Assistant · Always Online
+                                </div>
+                            </div>
+                        </div>
+                        <button class="chatbot-close-btn" id="chatbot-close-btn" aria-label="Close chat">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>
                         </button>
                     </div>
-                    <div class="chatbot-footer-text">Powered by AI · Local Volunteer Hub</div>
+
+                    <!-- Messages -->
+                    <div class="chatbot-messages" id="chatbot-messages" role="log" aria-live="polite">
+                        <!-- Messages inserted here -->
+                    </div>
+
+                    <!-- Quick Suggestions -->
+                    <div class="chatbot-suggestions" id="chatbot-suggestions">
+                        <button class="suggestion-chip" data-msg="What volunteer opportunities are available?">🔍 Find opportunities</button>
+                        <button class="suggestion-chip" data-msg="How do I apply for a volunteering slot?">📝 How to apply</button>
+                        <button class="suggestion-chip" data-msg="What does 'slots available' mean?">❓ Slots explained</button>
+                        <button class="suggestion-chip" data-msg="How do I register as a volunteer?">🙋 Register as volunteer</button>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="chatbot-input-area">
+                        <div class="chatbot-input-wrapper">
+                            <textarea
+                                id="chatbot-input"
+                                class="chatbot-input"
+                                placeholder="Ask me about volunteering opportunities..."
+                                rows="1"
+                                aria-label="Type your message"
+                                maxlength="500"
+                            ></textarea>
+                            <button id="chatbot-send" class="chatbot-send-btn" aria-label="Send message" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="chatbot-footer-text">Powered by AI · Local Volunteer Hub</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        `;
+            `;
 
         document.body.insertAdjacentHTML('beforeend', chatbotHTML);
     }
@@ -228,14 +227,14 @@ class VolunteerChatbot {
     }
 
     openChat() {
-        const window = document.getElementById('chatbot-window');
+        const chatWindow = document.getElementById('chatbot-window');
         const toggle = document.getElementById('chatbot-toggle');
         const notifDot = document.getElementById('chatbot-notif-dot');
         const openIcon = toggle.querySelector('.chatbot-icon-open');
         const closeIcon = toggle.querySelector('.chatbot-icon-close');
 
-        window.classList.add('open');
-        window.setAttribute('aria-hidden', 'false');
+        chatWindow.classList.add('open');
+        chatWindow.setAttribute('aria-hidden', 'false');
         toggle.classList.add('active');
         openIcon.style.display = 'none';
         closeIcon.style.display = 'block';
@@ -251,13 +250,13 @@ class VolunteerChatbot {
     }
 
     closeChat() {
-        const window = document.getElementById('chatbot-window');
+        const chatWindow = document.getElementById('chatbot-window');
         const toggle = document.getElementById('chatbot-toggle');
         const openIcon = toggle.querySelector('.chatbot-icon-open');
         const closeIcon = toggle.querySelector('.chatbot-icon-close');
 
-        window.classList.remove('open');
-        window.setAttribute('aria-hidden', 'true');
+        chatWindow.classList.remove('open');
+        chatWindow.setAttribute('aria-hidden', 'true');
         toggle.classList.remove('active');
         openIcon.style.display = 'block';
         closeIcon.style.display = 'none';
@@ -309,7 +308,7 @@ What would you like to know?`;
         this.showTyping();
 
         try {
-            const response = await this.callOpenRouter(text);
+            const response = await this.callGemini();
             this.hideTyping();
 
             if (response) {
@@ -328,35 +327,37 @@ What would you like to know?`;
         }
     }
 
-    async callOpenRouter(userMessage) {
-        const response = await fetch(OPENROUTER_URL, {
+    async callGemini() {
+        const contents = this.messages.map(msg => ({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }]
+        }));
+
+        const response = await fetch(GEMINI_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.href,
-                'X-Title': 'Local Volunteer Hub AI Assistant'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: MODEL,
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    ...this.messages
-                ],
-                max_tokens: 500,
-                temperature: 0.7,
-                stream: false
+                systemInstruction: {
+                    parts: [{ text: SYSTEM_PROMPT }]
+                },
+                contents: contents,
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 500
+                }
             })
         });
 
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
-            console.error('OpenRouter error:', err);
+            console.error('Gemini error:', err);
             throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
-        return data.choices?.[0]?.message?.content || null;
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
     }
 
     appendMessage(role, text) {
